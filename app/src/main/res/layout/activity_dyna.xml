@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/constraint_layout"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#ffffff"
+    tools:context=".MainActivity">
+
+    <SurfaceView
+        android:id="@+id/view_finder"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="@+id/accelplot"
+        app:layout_constraintEnd_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/accelplot" />
+
+    <com.androidplot.xy.XYPlot
+        android:id="@+id/accelplot"
+        style="@style/APDefacto.Light"
+        android:layout_width="wrap_content"
+        android:layout_height="250dp"
+        app:backgroundColor="#FFF"
+        app:domainTitle="domain"
+        app:graphBackgroundColor="#FFF"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/view_finder"
+        app:layout_constraintTop_toBottomOf="@id/ppgplot"
+        app:lineLabelRotationBottom="-45"
+        app:lineLabels="left|bottom"
+        app:rangeTitle="range"
+        app:title="Force (Accelerometer) Plot" />
+
+    <com.androidplot.xy.XYPlot
+        android:id="@+id/ppgplot"
+        android:layout_width="fill_parent"
+        android:layout_height="250dp"
+        app:backgroundColor="#FFF"
+        app:graphBackgroundColor="#FFF"
+        app:marginTop="10dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/lineText"
+        app:lineLabelRotationBottom="-45"
+        app:lineLabels="left|bottom"
+        app:rangeTitle="range"
+        app:title="PPG Plot"
+        android:visibility="invisible"
+        />
+
+
+    <Button
+        android:id="@+id/recordButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Record"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/CalibrationButton"
+        app:layout_constraintStart_toStartOf="parent"
+        android:visibility="invisible"
+        android:enabled="false"
+        app:layout_constraintTop_toBottomOf="@id/accelplot" />
+
+    <Button
+        android:id="@+id/lockScreenButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Lock Screen"
+        app:layout_constraintBottom_toTopOf="@id/recordButton"
+        app:layout_constraintStart_toStartOf="parent"
+        android:visibility="invisible"
+        android:enabled="false"
+        />
+    <Button
+        android:id="@+id/vibrateButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Vibrate"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:visibility= "invisible"
+        android:enabled="false"
+        app:layout_constraintStart_toEndOf="@id/CalibrationButton"
+        app:layout_constraintTop_toBottomOf="@+id/accelplot" />
+
+    <Button
+        android:id="@+id/CalibrationButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Start Test"
+        app:layout_constraintBottom_toTopOf="@+id/lineText"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/instructions" />
+
+    <Button
+        android:id="@+id/accelButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Switch Channel"
+
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/vibrateButton"
+        app:layout_constraintStart_toEndOf="@id/recordButton"
+        app:layout_constraintTop_toBottomOf="@+id/accelplot" />
+
+    <TextView
+        android:id="@+id/Dyna"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="3 Second Grip Stength Test"
+        android:textColor="#000000"
+        android:textSize="32dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/idNumber"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/instructions"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="20dp"
+        android:text="Hold the phone gently. When the screen turns green, squeeze/grip the phone as hard as you can for 3 seconds. The test will involve 2 squeezes."
+        android:textAlignment="center"
+        app:layout_constraintBottom_toBottomOf="@+id/ppgplot"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/idNumber" />
+
+    <TextView
+        android:id="@+id/lineText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Do Not Hold Phone Above This Line"
+        android:textColor="@color/white"
+        android:textAlignment="center"
+        android:background="#ff0000"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <EditText
+        android:id="@+id/idNumber"
+        android:layout_width="50dp"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:hint="id"
+        android:inputType="number"
+        app:layout_constraintBottom_toTopOf="@+id/instructions"
+        app:layout_constraintEnd_toStartOf="@id/trialNumber"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/Dyna" />
+
+    <EditText
+        android:id="@+id/trialNumber"
+        android:layout_width="50dp"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:hint="trial"
+        android:inputType="number"
+        app:layout_constraintBottom_toTopOf="@+id/instructions"
+        app:layout_constraintEnd_toEndOf="@id/gripStrength"
+        app:layout_constraintStart_toEndOf="@+id/idNumber"
+        app:layout_constraintTop_toBottomOf="@+id/Dyna" />
+
+    <EditText
+        android:id="@+id/gripStrength"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:hint="Grip Strength (kg)"
+        android:inputType="numberDecimal"
+        app:layout_constraintBottom_toTopOf="@+id/instructions"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/trialNumber"
+        app:layout_constraintTop_toBottomOf="@+id/Dyna" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

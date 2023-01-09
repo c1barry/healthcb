@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center_horizontal"
+    tools:context=".FirstFragment">
+
+
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/app_name"
+        android:textSize="40dp"
+        android:layout_marginTop="20dp"
+        android:textStyle="bold"
+        android:textColor="@color/black"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        />
+
+    <EditText
+        android:id="@+id/userIDNumber"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:ems="10"
+        android:inputType="number"
+        android:hint="Input User ID Number"
+        android:textAlignment="center"
+        />
+
+    <TextView
+        android:id="@+id/user_prompt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/first_fragment_prompt"
+        android:layout_marginTop="20dp"
+        />
+
+    <Button
+        android:id="@+id/button_farred"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Far Red Pupillometry"
+        android:layout_marginTop="20dp"
+         />
+    <Button
+        android:id="@+id/button_PupAlz"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="IR Pupillometry (PupAlz)"
+        android:layout_marginTop="20dp"
+        />
+    <Button
+        android:id="@+id/button_Dyna"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Hand Grip Stength (Dyna)"
+        android:layout_marginTop="20dp"
+        />
+    <Button
+        android:id="@+id/button_VibroBP"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Blood Pressure (VibroBP)"
+        android:layout_marginTop="20dp"
+        />
+    <Button
+        android:id="@+id/button_HemaApp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Hemoglobin Measure (HemaApp)"
+        android:layout_marginTop="20dp"
+        />
+
+
+</LinearLayout>
+
+

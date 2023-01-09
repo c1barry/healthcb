@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" >
+
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        tools:ignore="ScopedStorage" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.BODY_SENSORS"/>
+    <uses-permission android:name="android.permission.HIGH_SAMPLING_RATE_SENSORS"/>
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.ACCESS_MEDIA_LOCATION"/>
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+    <uses-feature android:name="android.hardware.camera.any" />
+
+    <application
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.HealthCB"
+        tools:targetApi="31" >
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:theme="@style/Theme.HealthCB.NoActionBar" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.app.lib_name"
+                android:value="" />
+        </activity>
+        <activity android:name=".farred.FarRedActivity"
+            android:exported="true"
+            android:label="Far Red"
+            android:windowFullscreen="true"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.HealthCB.NoActionBar"/>
+        <activity android:name=".VibroBPActivity"
+            android:exported="true"
+            android:label="VibroBP"
+            android:windowFullscreen="true"
+            android:screenOrientation="reverseLandscape"
+            android:theme="@style/Theme.HealthCB.NoActionBar"/>
+        <activity android:name=".DynaActivity"
+            android:exported="true"
+            android:label="Dyna"
+            android:windowFullscreen="true"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.HealthCB.NoActionBar"/>
+    </application>
+
+</manifest>

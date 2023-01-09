@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/FirstFragment">
+
+
+    <fragment
+        android:id="@+id/FirstFragment"
+        android:name="edu.ucsd.healthcb.FirstFragment"
+        android:label="@string/first_fragment_label"
+        tools:layout="@layout/fragment_first" >
+
+        <action
+            android:id="@+id/action_FirstFragment_to_FarRedFragment"
+            app:launchSingleTop="true"
+            app:destination="@id/far_red_fragment" />
+<!--        <action-->
+<!--            android:id="@+id/action_FirstFragment_to_VibroBPActivity"-->
+<!--            app:launchSingleTop="true"-->
+<!--            app:destination="@id/vibroBPActivity" />-->
+    </fragment>
+
+    <fragment
+        android:id="@+id/far_red_fragment"
+        android:name="edu.ucsd.healthcb.farred.FarRedFragment"
+        android:label="FarRed"
+        tools:layout="@layout/fragment_farred" >
+
+        <argument
+            android:name="camera_id"
+            app:argType="string"
+            android:defaultValue="0"
+            app:nullable="false"/>
+
+        <argument
+            android:name="width"
+            android:defaultValue="640"
+            app:argType="integer" />
+
+        <argument
+            android:name="height"
+            android:defaultValue="480"
+            app:argType="integer" />
+
+        <argument
+            android:name="fps"
+            android:defaultValue="30"
+            app:argType="integer" />
+
+        <argument
+            android:name="previewStabilization"
+            android:defaultValue="false"
+            app:argType="boolean" />
+
+        <argument
+            android:name="filterOn"
+            android:defaultValue="false"
+            app:argType="boolean" />
+
+        <argument
+            android:name="useHardware"
+            android:defaultValue="false"
+            app:argType="boolean" />
+
+        <action
+            android:id="@+id/action_FarRedFragment_to_FirstFragment"
+            app:destination="@id/FirstFragment" />
+    </fragment>
+
+
+</navigation>
