@@ -101,15 +101,7 @@ class FirstFragment : Fragment() {
         //Listeners on each measurement/app button to take the user to the specified measurement app
         binding.buttonFarred.setOnClickListener {
             val i = 0
-//            FirstFragmentDirections.actionFirstFragmentToFarRedFragment().cameraId="0"
-//            FirstFragmentDirections.actionFirstFragmentToFarRedFragment().fps=30
-//            FirstFragmentDirections.actionFirstFragmentToFarRedFragment().width=480
-//            FirstFragmentDirections.actionFirstFragmentToFarRedFragment().height=640
-            FirstFragmentDirections.actionFirstFragmentToFarRedFragment().cameraId=cameraList[i].cameraId
-            FirstFragmentDirections.actionFirstFragmentToFarRedFragment().fps=cameraList[i].fps
-            FirstFragmentDirections.actionFirstFragmentToFarRedFragment().width=cameraList[i].size.width
-            FirstFragmentDirections.actionFirstFragmentToFarRedFragment().height=cameraList[i].size.height
-            FirstFragmentDirections.actionFirstFragmentToFarRedFragment().useHardware=false
+
             findNavController().navigate(FirstFragmentDirections.actionFirstFragmentToFarRedFragment())
 //            val farredActivityIntent = Intent(context, FarRedActivity::class.java)
 //            farredActivityIntent.putExtra("UserId", userid)

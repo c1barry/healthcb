@@ -28,11 +28,13 @@ import android.media.*
 import android.os.*
 import android.util.Log
 import android.util.Range
+import android.util.Size
 import android.view.*
 import androidx.annotation.WorkerThread
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.navArgs
+import edu.ucsd.healthcb.FirstFragment
 import edu.ucsd.healthcb.Utils.EncoderWrapper
 import edu.ucsd.healthcb.Utils.YuvToRgbConverter
 import edu.ucsd.healthcb.Utils.getPreviewOutputSize
@@ -53,8 +55,6 @@ class FarRedFragment: Fragment() {
     // onDestroyView.
     private val binding get() = _binding!!
 
-    private val args: FarRedFragmentArgs by navArgs()
-
     /** Detects, characterizes, and connects to a CameraDevice (used for all camera operations) */
     private val cameraManager: CameraManager by lazy {
         val context = requireContext().applicationContext
@@ -62,7 +62,7 @@ class FarRedFragment: Fragment() {
     }
     /** [CameraCharacteristics] corresponding to the provided Camera ID */
     private val characteristics: CameraCharacteristics by lazy {
-        cameraManager.getCameraCharacteristics(args.cameraId)
+        cameraManager.getCameraCharacteristics(cameraId)
     }
 
     /** File where the recording will be saved */
@@ -158,10 +158,10 @@ class FarRedFragment: Fragment() {
             setVideoSource(MediaRecorder.VideoSource.SURFACE)
             setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
             setVideoEncodingBitRate(RECORDER_VIDEO_BITRATE)
-            if (cameraFps > 0) setVideoFrameRate(args.fps)
+            if (cameraFps > 0) setVideoFrameRate(cameraFps)
             setOutputFile(outputFile?.absolutePath)
 
-            setVideoSize(args.width, args.height)
+            setVideoSize(cameraWidth, cameraHeight)
             setVideoEncoder(MediaRecorder.VideoEncoder.HEVC)
             setInputSurface(surface)
             prepare() //for recorder prepared failed, check for valid width, height, fps, cameraid
@@ -174,12 +174,12 @@ class FarRedFragment: Fragment() {
 //        setAudioSource(MediaRecorder.AudioSource.MIC)
         setVideoSource(MediaRecorder.VideoSource.SURFACE)
         setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
-        setVideoFrameRate(args.fps)
+        setVideoFrameRate(cameraFps)
         outputFile = createFile(requireContext(),"mp4")//setupOutputFile("")
         setOutputFile(outputFile.absolutePath)
         setVideoEncodingBitRate(RECORDER_VIDEO_BITRATE)
-        if (cameraFps > 0) setVideoFrameRate(args.fps)
-        setVideoSize(args.width, args.height)
+        if (cameraFps > 0) setVideoFrameRate(cameraFps)
+        setVideoSize(cameraWidth, cameraHeight)
         setVideoEncoder(MediaRecorder.VideoEncoder.HEVC)
 //        setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
         setInputSurface(surface)
@@ -205,10 +205,10 @@ class FarRedFragment: Fragment() {
         surface
     }
 
-//    private val cameraId = "0"
-    private val cameraWidth = 640
-    private val cameraHeight = 480
-    private val cameraFps = 30
+    private var cameraId = "0"
+    private var cameraWidth = 640
+    private var cameraHeight = 480
+    private var cameraFps = 30
     private val imageFormat = ImageFormat.YUV_420_888
 
     /** Requests used for preview only in the [CameraCaptureSession] */
@@ -270,7 +270,7 @@ class FarRedFragment: Fragment() {
             addTarget(binding.viewFinder.holder.surface)
             addTarget(recorderSurface)
             // Sets user requested FPS for all targets
-            set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, Range(args.fps, args.fps))
+            set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, Range(cameraFps, cameraFps))
         }.build()
     }
 
@@ -325,6 +325,25 @@ class FarRedFragment: Fragment() {
     private fun isCurrentlyRecording(): Boolean {
         return recordingStarted && !recordingComplete
     }
+
+    /**
+     * creates list of all camera potions and chooses highest framerate with highest FPS
+     */
+    private fun setCameraParameters(){
+        //options of all cameras
+        val cameraList = enumerateVideoCameras(cameraManager)
+        for (item in cameraList){
+            if (item.orientation == "Back" && item.size.height>cameraHeight
+                && item.size.width>cameraWidth && item.fps>cameraFps){
+                cameraHeight=item.size.height
+                cameraWidth=item.size.width
+                cameraFps=item.fps
+                cameraId=item.cameraId
+
+            }
+        }
+    }
+
     /**
      * Begin all camera operations in a coroutine in the main thread. This function:
      * - Opens the camera
@@ -334,9 +353,10 @@ class FarRedFragment: Fragment() {
     @SuppressLint("ClickableViewAccessibility")
     private fun initializeCamera() = GlobalScope.launch(Dispatchers.Main) {
 
+        setCameraParameters()
         // Open the selected camera
-        camera = openCamera(cameraManager, args.cameraId, cameraHandler)
-        Log.d("preview", "camera opened".plus(args.cameraId))
+        camera = openCamera(cameraManager, cameraId, cameraHandler)
+        Log.d("preview", "camera opened".plus(cameraId))
         // Creates list of Surfaces where the camera will output frames
         val targets = listOf(binding.viewFinder.holder.surface, recorderSurface)
 
@@ -350,17 +370,22 @@ class FarRedFragment: Fragment() {
 //        session.setRepeatingRequest(captureRequest.build(), null, cameraHandler)
         session.setRepeatingRequest(previewRequest, null, cameraHandler)
 
+        // Button press triggers PLR test
         binding.buttonTest.setOnClickListener {
             GlobalScope.launch(Dispatchers.IO) {
+                binding.buttonTest.text="Testing"
+                binding.buttonTest.isEnabled=false
                 session.stopRepeating()
                 setupRecorder(recorderSurface,"STEP")
                 session.setRepeatingRequest(recordRequest, null, cameraHandler)
-                delay(1000)
-                toggleTorch()
-                delay(2000)
-                toggleTorch()
-                delay(5000)
+                delay(1000) //time before light on
+                toggleTorch() //toggle flashlight on
+                delay(2000) //time with light on
+                toggleTorch() //toggle flashlight off
+                delay(5000) //time after light off
                 recorder?.stop()
+                binding.buttonTest.text="Start Test"
+                binding.buttonTest.isEnabled=true
             }
         }
     }
@@ -402,7 +427,7 @@ class FarRedFragment: Fragment() {
                     addTarget(binding.viewFinder.holder.surface)
                     addTarget(recorderSurface)
                     // Sets user requested FPS for all targets
-                    set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, Range(args.fps, args.fps))
+                    set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, Range(cameraFps, cameraFps))
                 }.build(), null, cameraHandler)
                 torchOn=!torchOn
 
@@ -493,6 +518,70 @@ class FarRedFragment: Fragment() {
             val sdf = SimpleDateFormat("yyyy_MM_dd_HH_mm_ss_SSS", Locale.US)
             return File(mediaDir, "VID_${sdf.format(Date())}.$extension")
 //            return File(context.filesDir, "VID_${sdf.format(Date())}.$extension")
+        }
+        private data class CameraInfo(
+            val name: String,
+            val orientation: String,
+            val cameraId: String,
+            val size: Size,
+            val fps: Int)
+
+        /** Converts a lens orientation enum into a human-readable string */
+        private fun lensOrientationString(value: Int) = when (value) {
+            CameraCharacteristics.LENS_FACING_BACK -> "Back"
+            CameraCharacteristics.LENS_FACING_FRONT -> "Front"
+            CameraCharacteristics.LENS_FACING_EXTERNAL -> "External"
+            else -> "Unknown"
+        }
+        /** Lists all video-capable cameras and supported resolution and FPS combinations */
+        @SuppressLint("InlinedApi")
+        private fun enumerateVideoCameras(cameraManager: CameraManager): List<FarRedFragment.Companion.CameraInfo> {
+            val availableCameras: MutableList<FarRedFragment.Companion.CameraInfo> = mutableListOf()
+
+            // Iterate over the list of cameras and add those with high speed video recording
+            //  capability to our output. This function only returns those cameras that declare
+            //  constrained high speed video recording, but some cameras may be capable of doing
+            //  unconstrained video recording with high enough FPS for some use cases and they will
+            //  not necessarily declare constrained high speed video capability.
+            cameraManager.cameraIdList.forEach { id ->
+                val characteristics = cameraManager.getCameraCharacteristics(id)
+                val orientation = FarRedFragment.lensOrientationString(
+                    characteristics.get(CameraCharacteristics.LENS_FACING)!!
+                )
+
+                // Query the available capabilities and output formats
+                val capabilities = characteristics.get(
+                    CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES)!!
+                val cameraConfig = characteristics.get(
+                    CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)!!
+
+                // Return cameras that declare to be backward compatible
+                if (capabilities.contains(
+                        CameraCharacteristics
+                            .REQUEST_AVAILABLE_CAPABILITIES_BACKWARD_COMPATIBLE)) {
+                    // Recording should always be done in the most efficient format, which is
+                    //  the format native to the camera framework
+                    val targetClass = MediaRecorder::class.java
+
+                    // For each size, list the expected FPS
+                    cameraConfig.getOutputSizes(targetClass).forEach { size ->
+                        // Get the number of seconds that each frame will take to process
+                        val secondsPerFrame =
+                            cameraConfig.getOutputMinFrameDuration(targetClass, size) /
+                                    1_000_000_000.0
+                        // Compute the frames per second to let user select a configuration
+                        val fps = if (secondsPerFrame > 0) (1.0 / secondsPerFrame).toInt() else 0
+                        val fpsLabel = if (fps > 0) "$fps" else "N/A"
+                        availableCameras.add(
+                            FarRedFragment.Companion.CameraInfo(
+                                "$orientation ($id) $size $fpsLabel FPS", orientation, id, size, fps
+                            )
+                        )
+                    }
+                }
+            }
+
+            return availableCameras
         }
 
     }
