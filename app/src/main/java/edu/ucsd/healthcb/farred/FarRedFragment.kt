@@ -364,7 +364,7 @@ class FarRedFragment: Fragment() {
 
 //                cameraManager.setTorchMode("0",true)
                 session.setRepeatingRequest(session.device.createCaptureRequest(CameraDevice.TEMPLATE_RECORD).apply {
-                    // Add the preview and recording surface targets
+                    // Add the preview and recording surface target
                     this[CaptureRequest.FLASH_MODE] = flashMode
                     this[CaptureRequest.LENS_OPTICAL_STABILIZATION_MODE] =
                         CameraCharacteristics.LENS_OPTICAL_STABILIZATION_MODE_OFF
