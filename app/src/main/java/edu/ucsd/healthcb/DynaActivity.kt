@@ -49,6 +49,7 @@ import android.view.SurfaceView
 import android.view.WindowManager
 import android.widget.Button
 import android.widget.EditText
+import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.annotation.WorkerThread
@@ -68,6 +69,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import org.opencv.android.OpenCVLoader
 import org.opencv.android.Utils
 import org.opencv.core.Core
+import org.opencv.core.Core.mean
 import org.opencv.core.CvType
 import org.opencv.core.Mat
 import org.opencv.core.Rect
@@ -92,6 +94,9 @@ class DynaActivity : AppCompatActivity(), SensorEventListener {
     private var isVibrating = false
     private var isScreenLocked = false
     private var isRecording = false
+    private var orientationCorrect= false
+    private lateinit var lineText:TextView
+
 //    private lateinit var vibrationManager: VibratorManager
     private var xaccelMeasurements: FloatArray = floatArrayOf()
     private var yaccelMeasurements: FloatArray = floatArrayOf()
@@ -254,6 +259,7 @@ class DynaActivity : AppCompatActivity(), SensorEventListener {
         verifyVibratePermissions(this)
         var vibrateButton: Button = findViewById<Button>(R.id.vibrateButton)
         var lockScreenButton: Button = findViewById<Button>(R.id.lockScreenButton)
+        lineText =findViewById(R.id.lineText)
         lockScreenButton.setOnClickListener {
             if (isScreenLocked){
                 window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
@@ -486,9 +492,20 @@ class DynaActivity : AppCompatActivity(), SensorEventListener {
     private fun getFilename(path: String): String {
         return(path.substring(path.lastIndexOf("/")+1))
     }
+    private fun changeLineColor(oreint:Boolean){
+        if (oreint){
+            lineText.setBackgroundColor(Color.parseColor("#00ff00"))
+        }else{
+            lineText.setBackgroundColor(Color.parseColor("#ff0000"))
+        }
+    }
 
     override fun onSensorChanged(p0: SensorEvent?) {
         if (p0!!.sensor.type == Sensor.TYPE_ACCELEROMETER) {
+            val x = p0?.values?.get(0)!!.toDouble()
+            val y = p0?.values?.get(1)!!.toDouble()
+            val z = p0?.values?.get(2)!!.toDouble()
+
             if (isRecording) {
                 xaccelMeasurements = xaccelMeasurements.plus(p0?.values?.get(0)!!)
                 yaccelMeasurements = yaccelMeasurements.plus(p0?.values?.get(1)!!)
@@ -512,9 +529,6 @@ class DynaActivity : AppCompatActivity(), SensorEventListener {
 //        xaccelSeries.updateData(p0?.values?.get(0)!!.toDouble())
 //        yaccelSeries.updateData(p0?.values?.get(1)!!.toDouble())
 //        zaccelSeries.updateData(p0?.values?.get(2)!!.toDouble())
-            val x = p0?.values?.get(0)!!.toDouble()
-            val y = p0?.values?.get(1)!!.toDouble()
-            val z = p0?.values?.get(2)!!.toDouble()
 //            yaccelSeries.updateData(y)
             xaccelBufferQueue.add(x)
             yaccelBufferQueue.add(y)
@@ -532,6 +546,17 @@ class DynaActivity : AppCompatActivity(), SensorEventListener {
                 val xbufferArray = xaccelBufferQueue.toList().toDoubleArray()
                 val ybufferArray = yaccelBufferQueue.toList().toDoubleArray()
                 val zbufferArray = zaccelBufferQueue.toList().toDoubleArray()
+
+                val x_avg = xbufferArray.average()
+                val y_avg = ybufferArray.average()
+                val z_avg = zbufferArray.average()
+                    if (abs(x_avg)<1.5 && y_avg<11.2 && y_avg>8.8 && abs(z_avg)<1.5 && !orientationCorrect){
+                        orientationCorrect=true
+                        changeLineColor(orientationCorrect)
+                    }else if (orientationCorrect){
+                        orientationCorrect=false
+                        changeLineColor(orientationCorrect)
+                    }
 
                 val xreflect = UtilMethods.padSignal(xbufferArray, "reflect")
                 val yreflect = UtilMethods.padSignal(ybufferArray, "reflect")

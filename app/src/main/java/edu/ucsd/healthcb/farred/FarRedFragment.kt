@@ -17,9 +17,7 @@ IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY FOR DIRECT
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.graphics.Bitmap
 import android.graphics.ImageFormat
-import android.hardware.Camera
 import android.hardware.camera2.*
 import android.hardware.camera2.params.ColorSpaceTransform
 import android.hardware.camera2.params.RggbChannelVector
@@ -30,18 +28,11 @@ import android.util.Log
 import android.util.Range
 import android.util.Size
 import android.view.*
-import androidx.annotation.WorkerThread
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
-import androidx.navigation.fragment.navArgs
-import edu.ucsd.healthcb.FirstFragment
-import edu.ucsd.healthcb.Utils.EncoderWrapper
-import edu.ucsd.healthcb.Utils.YuvToRgbConverter
 import edu.ucsd.healthcb.Utils.getPreviewOutputSize
 import edu.ucsd.healthcb.databinding.FragmentFarredBinding
 import kotlinx.coroutines.*
 import java.io.File
-import java.nio.ByteBuffer
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.coroutines.resume
@@ -82,7 +73,6 @@ class FarRedFragment: Fragment() {
 
     /***************************************Camera Parameters *********************************/
 
-    private lateinit var cameraDevice: CameraDevice
     private var torchOn = false
 //    private val autoAE = CONTROL_AE_MODE_ON
     private val autoAE = CameraCharacteristics.CONTROL_AE_MODE_OFF
