@@ -550,13 +550,13 @@ class DynaActivity : AppCompatActivity(), SensorEventListener {
                 val x_avg = xbufferArray.average()
                 val y_avg = ybufferArray.average()
                 val z_avg = zbufferArray.average()
-                    if (abs(x_avg)<1.5 && y_avg<11.2 && y_avg>8.8 && abs(z_avg)<1.5 && !orientationCorrect){
-                        orientationCorrect=true
-                        changeLineColor(orientationCorrect)
-                    }else if (orientationCorrect){
-                        orientationCorrect=false
-                        changeLineColor(orientationCorrect)
-                    }
+                if (abs(x_avg)<1.5 && y_avg<11.2 && y_avg>8.8 && abs(z_avg)<1.5 && !orientationCorrect){
+                    orientationCorrect=true
+                    changeLineColor(orientationCorrect)
+                }else if (orientationCorrect){
+                    orientationCorrect=false
+                    changeLineColor(orientationCorrect)
+                }
 
                 val xreflect = UtilMethods.padSignal(xbufferArray, "reflect")
                 val yreflect = UtilMethods.padSignal(ybufferArray, "reflect")
