@@ -90,13 +90,14 @@ class DynaActivity : AppCompatActivity(), SensorEventListener {
     private lateinit var sensorManager: SensorManager
     private var mAccelerometer: Sensor? = null
     private var mGyro: Sensor? = null
+    private var mOrientation: Sensor? = null
     private var mVibrator: Vibrator? = null
     private var isVibrating = false
     private var isScreenLocked = false
     private var isRecording = false
     private var orientationCorrect= false
     private lateinit var lineText:TextView
-
+    private lateinit var CalibrationButton: Button
 //    private lateinit var vibrationManager: VibratorManager
     private var xaccelMeasurements: FloatArray = floatArrayOf()
     private var yaccelMeasurements: FloatArray = floatArrayOf()
@@ -246,6 +247,7 @@ class DynaActivity : AppCompatActivity(), SensorEventListener {
 //        mVibrator = vibrationManager.defaultVibrator
         mAccelerometer=sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
         mGyro = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE)
+        mOrientation=sensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY)
 
 //        if (sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION) != null) {
 ////            mAccelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION)
@@ -304,7 +306,7 @@ class DynaActivity : AppCompatActivity(), SensorEventListener {
         }
         OpenCVLoader.initDebug()
         var recordButton: Button = findViewById(R.id.recordButton)
-        var CalibrationButton:Button=findViewById(R.id.CalibrationButton)
+        CalibrationButton=findViewById(R.id.CalibrationButton)
         var background =findViewById<ConstraintLayout>(R.id.constraint_layout)
         var accelButton:Button=findViewById(R.id.accelButton)
         var idNumberText = findViewById<EditText>(R.id.idNumber)
@@ -494,13 +496,37 @@ class DynaActivity : AppCompatActivity(), SensorEventListener {
     }
     private fun changeLineColor(oreint:Boolean){
         if (oreint){
-            lineText.setBackgroundColor(Color.parseColor("#00ff00"))
+            CalibrationButton.setBackgroundColor(Color.parseColor("#00ff00"))
+            CalibrationButton.text = "Start Test"
+            CalibrationButton.isEnabled=true
         }else{
-            lineText.setBackgroundColor(Color.parseColor("#ff0000"))
+            CalibrationButton.setBackgroundColor(Color.parseColor("#ff0000"))
+            CalibrationButton.text = "Hold Phone Upright Before Starting Test"
+            CalibrationButton.isEnabled=false
         }
     }
 
     override fun onSensorChanged(p0: SensorEvent?) {
+        if (p0!!.sensor.type == Sensor.TYPE_GRAVITY){
+            val ox = p0!!.values.get(0)!!.toDouble()
+            val oy = p0.values.get(1)!!.toDouble()
+            val oz = p0.values.get(2)!!.toDouble()
+            if (!isRecording && !calibrationMode){
+                if (abs(ox)<1.5 && oy<11.2 && oy>8.8 && abs(oz)<1.5){
+                    orientationCorrect=true
+                    changeLineColor(orientationCorrect)
+                }else {
+//                    Log.d("orientationCorrection",ox.toString().plus(", ").plus(oy.toString()).plus(", ").plus(oz.toString()))
+                    orientationCorrect=false
+                    changeLineColor(orientationCorrect)
+                }
+            }else if (abs(ox)>1.5 || oy>11.2 || oy<8.8 || abs(oz)<1.5){
+                Toast.makeText(this,"Test Failed Due to Phone Orientation Shift", Toast.LENGTH_LONG).show()
+                writer.appendLine("Test Failed Due to Phone Orientation Shift at ".plus(Calendar.getInstance().timeInMillis.toString()))
+                gyrowriter.appendLine("Test Failed Due to Phone Orientation Shift at ".plus(Calendar.getInstance().timeInMillis.toString()))
+            }
+
+        }
         if (p0!!.sensor.type == Sensor.TYPE_ACCELEROMETER) {
             val x = p0?.values?.get(0)!!.toDouble()
             val y = p0?.values?.get(1)!!.toDouble()
@@ -547,17 +573,16 @@ class DynaActivity : AppCompatActivity(), SensorEventListener {
                 val ybufferArray = yaccelBufferQueue.toList().toDoubleArray()
                 val zbufferArray = zaccelBufferQueue.toList().toDoubleArray()
 
-                val x_avg = xbufferArray.average()
-                val y_avg = ybufferArray.average()
-                val z_avg = zbufferArray.average()
-                if (abs(x_avg)<1.5 && y_avg<11.2 && y_avg>8.8 && abs(z_avg)<1.5 && !orientationCorrect){
-                    orientationCorrect=true
-                    changeLineColor(orientationCorrect)
-                }else if (orientationCorrect){
-                    orientationCorrect=false
-                    changeLineColor(orientationCorrect)
-                }
-
+//                val x_avg = xbufferArray.average()
+//                val y_avg = ybufferArray.average()
+//                val z_avg = zbufferArray.average()
+//                if (abs(x_avg)<1.5 && y_avg<11.2 && y_avg>8.8 && abs(z_avg)<1.5 && !orientationCorrect){
+//                    orientationCorrect=true
+//                    changeLineColor(orientationCorrect)
+//                }else if (orientationCorrect){
+//                    orientationCorrect=false
+//                    changeLineColor(orientationCorrect)
+//                }
                 val xreflect = UtilMethods.padSignal(xbufferArray, "reflect")
                 val yreflect = UtilMethods.padSignal(ybufferArray, "reflect")
                 val zreflect = UtilMethods.padSignal(zbufferArray, "reflect")
@@ -702,6 +727,10 @@ class DynaActivity : AppCompatActivity(), SensorEventListener {
         }
         mGyro.also { gyro ->
             sensorManager.registerListener(this, gyro, SensorManager.SENSOR_DELAY_FASTEST)
+        }
+        mOrientation.also { orient ->
+            sensorManager.registerListener(this,orient,SensorManager.SENSOR_DELAY_UI)
+
         }
     }
     override fun onPause() {
