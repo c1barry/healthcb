@@ -20,12 +20,17 @@ import android.content.Intent
 import android.hardware.camera2.*
 import android.os.Bundle
 import android.util.Log
+import android.view.KeyEvent
+import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
+import androidx.navigation.findNavController
+import edu.ucsd.healthcb.FirstFragmentDirections
 import edu.ucsd.healthcb.MainActivity
 import edu.ucsd.healthcb.R
 import edu.ucsd.healthcb.databinding.FragmentFarredBinding
+import edu.ucsd.healthcb.databinding.ActivityFarredBinding
 import java.util.*
 
 
@@ -35,7 +40,7 @@ import java.util.*
  */
 
 class FarRedActivity: AppCompatActivity() {
-    private lateinit var binding: FragmentFarredBinding
+    private lateinit var binding: ActivityFarredBinding
     private lateinit var userid: String
 
 
@@ -43,24 +48,48 @@ class FarRedActivity: AppCompatActivity() {
     // onDestroyView.
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = FragmentFarredBinding.inflate(layoutInflater)
+        binding = ActivityFarredBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        if (intent.extras?.get("UserId") != null) {
-            userid = intent.extras?.get("UserId") as String
-            Log.d("userid", "farred userid = ".plus(userid))
-            binding.userIDNumber.setText(userid)
+//        if (intent.extras?.get("UserId") != null) {
+//            userid = intent.extras?.get("UserId") as String
+//            Log.d("userid", "farred userid = ".plus(userid))
+//            binding.userIDNumber.setText(userid)
+//        }
+
+
+
+//        binding.buttonHome.setOnClickListener {
+////            findNavController(R.id.action_FarRedFragment_to_FirstFragment)
+//            val mainActivityIntent = Intent(this, MainActivity::class.java)
+//            mainActivityIntent.putExtra("UserId", userid)
+//            startActivity(mainActivityIntent)
+//        }
+
+
+    }
+
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        val action: Int
+        val keycode: Int
+        val plrButton = findViewById<Button>(R.id.button_test)
+        val dsButton = findViewById<Button>(R.id.button_digitspan)
+        action = event.action
+        keycode = event.keyCode
+        when (keycode) {
+            KeyEvent.KEYCODE_VOLUME_UP -> {
+                if (KeyEvent.ACTION_UP === action) {
+                    plrButton.performClick()
+                    return true
+                }
+            }
+            KeyEvent.KEYCODE_VOLUME_DOWN -> {
+                if (KeyEvent.ACTION_DOWN == action){
+                    dsButton.performClick()
+                    return true
+                }
+            }
         }
-
-
-
-        binding.buttonHome.setOnClickListener {
-//            findNavController(R.id.action_FarRedFragment_to_FirstFragment)
-            val mainActivityIntent = Intent(this, MainActivity::class.java)
-            mainActivityIntent.putExtra("UserId", userid)
-            startActivity(mainActivityIntent)
-        }
-
-
+        return super.dispatchKeyEvent(event)
     }
 }

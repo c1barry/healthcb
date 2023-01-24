@@ -78,18 +78,19 @@
         android:id="@+id/button_test"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Start Test"
-        android:layout_marginBottom="50dp"
+        android:text="PLR Test"
+        android:layout_marginBottom="20dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        android:layout_marginRight="40dp" />
 
     <Button
-        android:id="@+id/button_home"
+        android:id="@+id/button_digitspan"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Back"
-        android:layout_marginBottom="10dp"
+        android:text="Digit Span"
+        android:layout_marginBottom="20dp"
+        android:layout_marginLeft="40dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 

@@ -16,8 +16,6 @@ IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY FOR DIRECT
 import android.Manifest
 import android.Manifest.permission.CAMERA
 import android.Manifest.permission.VIBRATE
-import android.R.attr.left
-import android.R.attr.right
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.ContentValues.TAG
@@ -33,7 +31,6 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.hardware.camera2.*
-import android.hardware.camera2.CameraCharacteristics.LENS_FACING
 import android.hardware.camera2.params.ColorSpaceTransform
 import android.hardware.camera2.params.RggbChannelVector
 import android.hardware.camera2.params.StreamConfigurationMap
@@ -50,6 +47,7 @@ import androidx.annotation.RequiresApi
 import androidx.annotation.WorkerThread
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.lifecycle.lifecycleScope
 import com.androidplot.util.Redrawer
 import com.androidplot.xy.*
@@ -57,10 +55,7 @@ import com.github.psambit9791.jdsp.filter.Butterworth
 import com.github.psambit9791.jdsp.misc.UtilMethods
 import com.jcraft.jsch.*
 import edu.ucsd.healthcb.Utils.YuvToRgbConverter
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.*
 import org.opencv.android.OpenCVLoader
 import org.opencv.android.Utils
 import org.opencv.core.Core
@@ -82,6 +77,8 @@ import kotlin.math.sqrt
 class VibroBPActivity : AppCompatActivity(), SensorEventListener {
 
     /************************************Sensor and Plotting Related**********************************/
+    private lateinit var CalibrationButton: Button
+    private lateinit var isoButton: Button
     private lateinit var sensorManager: SensorManager
     private var mAccelerometer: Sensor? = null
     private var mGyro: Sensor? = null
@@ -449,7 +446,7 @@ class VibroBPActivity : AppCompatActivity(), SensorEventListener {
                     Log.d("sensitivity", "luma: ".plus(luma.toString()))
                     session.stopRepeating()
                     val minthresh = 120
-                    val maxthresh = 210
+                    val maxthresh = 170
                     if (luma>maxthresh){
                         sensitivity= abs(sensitivity-abs(luma-minthresh)).toInt()
                     }else if (luma<minthresh){
@@ -1052,8 +1049,8 @@ class VibroBPActivity : AppCompatActivity(), SensorEventListener {
         OpenCVLoader.initDebug()
         view_finder = findViewById(R.id.view_finder)
         var recordButton: Button = findViewById(R.id.recordButton)
-        var CalibrationButton:Button=findViewById(R.id.CalibrationButton)
-        var isoButton:Button=findViewById(R.id.isoButton)
+        CalibrationButton=findViewById(R.id.CalibrationButton)
+        isoButton=findViewById(R.id.isoButton)
         var accelButton:Button=findViewById(R.id.accelButton)
         var idNumberText = findViewById<EditText>(R.id.idNumber)
         var trialNumberText = findViewById<EditText>(R.id.trialNumber)
@@ -1065,6 +1062,7 @@ class VibroBPActivity : AppCompatActivity(), SensorEventListener {
             Log.d("userid", "farred userid = ".plus(useridstring))
                 idNumberText.setText(useridstring)
         }
+        idNumberText.isEnabled = true
 
         recordButton.setOnClickListener {
             val seconds = seconds.toLong()
@@ -1203,12 +1201,14 @@ class VibroBPActivity : AppCompatActivity(), SensorEventListener {
         isoButton.setOnClickListener{
             lifecycleScope.launch {
                 //adjust ISO to get ppgval (luma) within desired range 0<ppg<255
+                isoButton.text="ISO Calibration in Progress"
                 while (ISOset == true) {
                     correctISO = true
                     delay(1000)
                     Log.d("sensitivity", "sensitivity: ".plus(sensitivity.toString()))
                 }
                 ISOset=true
+                isoButton.text="Calibrate ISO"
 //                Toast.makeText(applicationContext, "calibrated", Toast.LENGTH_SHORT).show()
             }
         }
@@ -1294,10 +1294,35 @@ class VibroBPActivity : AppCompatActivity(), SensorEventListener {
         }
     }
 
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        val action: Int
+        val keycode: Int
+        action = event.action
+        keycode = event.keyCode
+        when (keycode) {
+            KeyEvent.KEYCODE_VOLUME_UP -> {
+                if (KeyEvent.ACTION_UP === action) {
+                    CalibrationButton.performClick()
+                }
+            }
+            KeyEvent.KEYCODE_VOLUME_DOWN -> {
+                if (KeyEvent.ACTION_DOWN == action){
+                    isoButton.performClick()
+                }
+            }
+        }
+        if (KeyEvent.ACTION_UP === action || KeyEvent.ACTION_DOWN == action) {
+            return true
+        }else{
+            return super.dispatchKeyEvent(event)
+        }
+
+    }
+
 
     private fun createNamedFile(context: Context,type: String, extension: String): File {
         val sdf = SimpleDateFormat("yyyy_MM_dd_HH_mm_ss_SSS", Locale.US)
-        return File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), Build.MODEL.toString().plus("_")
+        return File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "VibroBP_".plus(Build.MODEL.toString()).plus("_")
             .plus(type)
             .plus("_")
             .plus(userIDnumber.toString())
@@ -1565,6 +1590,8 @@ class VibroBPActivity : AppCompatActivity(), SensorEventListener {
         return output
     }
     companion object {
+        var filesforupload:MutableList<File> = emptyList<File>().toMutableList()
+        private lateinit var context: Context
 //        private val TAG = CameraFragment::class.java.simpleName
         //        public const val manualPPGSquareSize = 150
 //        public const val manualPPGSquareSize = 175
@@ -1598,17 +1625,36 @@ class VibroBPActivity : AppCompatActivity(), SensorEventListener {
             return File(context.filesDir, "VID_${sdf.format(Date())}.$extension")
         }
 
+        private fun uploadFileArrayToNassftp(filestoupload:MutableList<File>){
+            try {
+                val client = SFTPClient
+                Log.d("test", "client created")
+                val fileiterator = filestoupload.iterator()
+                Log.d("test", "continuing upload")
+                Thread {
+                    while (fileiterator.hasNext()) {
+                        client.sftpUploadFile_keyAuthentication_jsch(context,fileiterator.next())
+                        Log.d("test", "continuing upload")
+                    }
+                    Log.d("test", "finished upload")
+                }.start()
+
+            } catch (e: Exception) {
+                Log.d("SFTP upload", e.toString())
+            }
+        }
+
         class SFTPClient {
             var context: Context? = null
 
             companion object {
                 private val username = "udcomplab"
-                private val host = "137.110.115.58"
+                private val host = "132.239.43.100"
                 //            private val host = "sftp://137.110.115.58"
                 private val password  = "W3AreUbicomp!"
                 //            private val host: String = ServerUrl.FTP_HOST
 //            private val username: String = ServerUrl.FTP_USERNAME
-                private const val remoteDirectory = "Projects/VibroBP/RemoteUploads"
+                private const val remoteDirectory = "Projects/VibroBP/remoteUploads"
                 var photo_file: File? = null
 
                 /**

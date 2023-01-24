@@ -86,6 +86,8 @@ import kotlin.math.sqrt
 
 class DynaActivity : AppCompatActivity(), SensorEventListener {
 
+    val fsr_testing=false //developer variable for switching to calibration testing with fsr
+
     /************************************Sensor and Plotting Related**********************************/
     private lateinit var sensorManager: SensorManager
     private var mAccelerometer: Sensor? = null
@@ -155,8 +157,8 @@ class DynaActivity : AppCompatActivity(), SensorEventListener {
     private var ygyroBufferQueue: Queue<Double> = LinkedList<Double>()
     private var zgyroBufferQueue: Queue<Double> = LinkedList<Double>()
 
-    private val recordSeconds = 5000L //total length of recording (length of squeeze is recordSeconds-delayTime
-    private val delayTime = 1000L //time during recording that participant is not squeezing
+    private val recordSeconds = 10000L //total length of recording
+    private val delayTime = 2500L // Delay time during recording before and after squeeze
 
 //    private lateinit var view_finder: SurfaceView
     private var vibrateContinuous=true
@@ -249,13 +251,6 @@ class DynaActivity : AppCompatActivity(), SensorEventListener {
         mGyro = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE)
         mOrientation=sensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY)
 
-//        if (sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION) != null) {
-////            mAccelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION)
-//            mAccelerometer=sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
-//            mGyro = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE)
-//        } else {
-//            Toast.makeText(this, "No Accelerometer/Gyroscope Access", Toast.LENGTH_LONG)
-//        }
         verifyStoragePermissions(this)
         verifyCameraPermissions(this)
         verifyVibratePermissions(this)
@@ -286,10 +281,9 @@ class DynaActivity : AppCompatActivity(), SensorEventListener {
                             val vibe = VibrationEffect.createOneShot(1000 * 100, 255)
                             mVibrator?.vibrate(vibe)
                         }else{
-                            val vibe = VibrationEffect.createWaveform(longArrayOf(1000,1000), intArrayOf(255,255), 0)
+                            val vibe = VibrationEffect.createWaveform(longArrayOf(2000,10000), intArrayOf(255,255), 0)
                             mVibrator?.vibrate(vibe)
                         }
-
                     }else{
                         val vibe = VibrationEffect.createWaveform(longArrayOf(200,200), intArrayOf(255,0),0)
                         mVibrator?.vibrate(vibe)
@@ -297,8 +291,6 @@ class DynaActivity : AppCompatActivity(), SensorEventListener {
                 }
 
 //                val vibe = VibrationEffect.createWaveform(longArrayOf(1000*5), intArrayOf(255),0)
-
-
 //                mVibrator?.vibrate(longArrayOf(500,500,0),0)
 
             }
@@ -336,7 +328,13 @@ class DynaActivity : AppCompatActivity(), SensorEventListener {
 
             lifecycleScope.launch() {
                 Toast.makeText(applicationContext, "Recording Grip", Toast.LENGTH_LONG).show()
-                delay(recordSeconds)
+                if (fsr_testing){
+                    val testing_record_seconds = 50*1000L
+                    delay(testing_record_seconds)
+                }else{
+                    delay(recordSeconds)
+                }
+
                 writer.flush()
                 gyrowriter.flush()
                 writer.close()
@@ -414,21 +412,38 @@ class DynaActivity : AppCompatActivity(), SensorEventListener {
 
                 accelplot.rangeStepValue = 2.0
                 accelplot.layoutManager.remove(accelplot.legend)
-//                vibrateButton.isEnabled=true
 
+                if (fsr_testing){
+                    recordButton.performClick()
+                    delay(100) //short delay to ensure isRecording = true is called
+                    delay(delayTime)
+                    while (isRecording){
+                        vibrateButton.performClick()
+                        delay(delayTime)
+                        background.setBackgroundColor(Color.GREEN)
+                        delay(recordSeconds-2*delayTime)
+                        Log.d("vibration check", "white")
+                        background.setBackgroundColor(Color.WHITE)
 
-                //First Test (vibrate, record, green screen)
-                vibrateButton.performClick()
-                recordButton.performClick()
+                        vibrateButton.performClick()
+//                vibrateContinuous=!vibrateContinuous
+                        delay(delayTime)
+                    }
+
+                }else{  //regular testing mode
+                    vibrateButton.performClick()
+                    recordButton.performClick()
 //                delay(delayTime)
-                background.setBackgroundColor(Color.GREEN)
-                delay(recordSeconds)
-                Log.d("vibration check", "white")
-                background.setBackgroundColor(Color.WHITE)
+                    background.setBackgroundColor(Color.GREEN)
+                    delay(recordSeconds)
+                    Log.d("vibration check", "white")
+                    background.setBackgroundColor(Color.WHITE)
 
-                vibrateButton.performClick()
-                vibrateContinuous=!vibrateContinuous
-                delay(delayTime)
+                    vibrateButton.performClick()
+//                vibrateContinuous=!vibrateContinuous
+                    delay(delayTime)
+                }
+
 //
 //                vibrateButton.performClick()
 //                recordButton.performClick()
@@ -459,7 +474,7 @@ class DynaActivity : AppCompatActivity(), SensorEventListener {
         }else{
             contvibe="pulse"
         }
-        return File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), Build.MODEL.toString().plus("_")
+        return File(context.filesDir, "Dyna_".plus(Build.MODEL.toString()).plus("_")//File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "Dyna_".plus(Build.MODEL.toString()).plus("_")
             .plus(type)
             .plus("_")
             .plus(userIDnumber.toString())
@@ -468,8 +483,6 @@ class DynaActivity : AppCompatActivity(), SensorEventListener {
             .plus("_")
             .plus(gripStrength)
             .plus("_")
-            .plus(contvibe)
-            .plus("_")
             .plus("${sdf.format(Date())}.$extension"))
     }
 
@@ -477,11 +490,14 @@ class DynaActivity : AppCompatActivity(), SensorEventListener {
         try {
             Log.d("test", "client created")
             val fileiterator = filestoupload.iterator()
+            Log.d("test", "continuing upload")
             Thread {
                 var client = SFTPClient
                 while (fileiterator.hasNext()) {
                     client.sftpUploadFile_keyAuthentication_jsch(applicationContext,fileiterator.next())
+                    Log.d("test", "continuing upload")
                 }
+                Log.d("test", "finished upload")
             }.start()
 
         } catch (e: Exception) {
@@ -520,8 +536,11 @@ class DynaActivity : AppCompatActivity(), SensorEventListener {
                     orientationCorrect=false
                     changeLineColor(orientationCorrect)
                 }
-            }else if (abs(ox)>1.5 || oy>11.2 || oy<8.8 || abs(oz)<1.5){
-                Toast.makeText(this,"Test Failed Due to Phone Orientation Shift", Toast.LENGTH_LONG).show()
+            }else if (isRecording && (abs(ox)>1.5 || oy>11.2 || oy<8.8 || abs(oz)>1.5)){
+                if (CalibrationButton.text == "Testing in Progress"){
+                    CalibrationButton.setBackgroundColor(Color.parseColor("#ff0000"))
+                    CalibrationButton.text = "Test Failed Due to Phone Orientation Shift"
+                }
                 writer.appendLine("Test Failed Due to Phone Orientation Shift at ".plus(Calendar.getInstance().timeInMillis.toString()))
                 gyrowriter.appendLine("Test Failed Due to Phone Orientation Shift at ".plus(Calendar.getInstance().timeInMillis.toString()))
             }
@@ -791,6 +810,7 @@ class DynaActivity : AppCompatActivity(), SensorEventListener {
         return output
     }
     companion object {
+
 //        private val TAG = CameraFragment::class.java.simpleName
         //        public const val manualPPGSquareSize = 150
 //        public const val manualPPGSquareSize = 175
@@ -829,12 +849,12 @@ class DynaActivity : AppCompatActivity(), SensorEventListener {
 
             companion object {
                 private val username = "udcomplab"
-                private val host = "137.110.115.58"
+                private val host = "132.239.43.100"
                 //            private val host = "sftp://137.110.115.58"
                 private val password  = "W3AreUbicomp!"
                 //            private val host: String = ServerUrl.FTP_HOST
 //            private val username: String = ServerUrl.FTP_USERNAME
-                private const val remoteDirectory = "Projects/VibroBP/RemoteUploads"
+                private const val remoteDirectory = "Projects/Dyna/remoteUploads"
                 var photo_file: File? = null
 
                 /**
@@ -910,7 +930,7 @@ class DynaActivity : AppCompatActivity(), SensorEventListener {
                                 session.setPassword(password)
                                 session.connect()
                                 println("JSch JSch Session connected.")
-                                Log.d("Start Upload Process", "connected")
+                                Log.d("test", "connected")
                                 println("Opening Channel.")
                                 System.gc()
                                 var channelSftp: ChannelSftp? = null
@@ -918,19 +938,25 @@ class DynaActivity : AppCompatActivity(), SensorEventListener {
                                 channelSftp.connect()
                                 Log.d("test", "channel open")
                                 channelSftp.cd(remoteDirectory)
+                                Log.d("test", "navigated to directory")
                                 val currentFilelength = f.length()
                                 fis = FileInputStream(f)
+                                Log.d("test", "found local file")
                                 channelSftp.put(fis, f.name)
                                 Log.d("test", "Start Upload Process")
                             } catch (e: IOException) {
                                 // TODO Auto-generated catch block
                                 e.printStackTrace()
+                                Log.d("test", "failed1")
                             } catch (e: OutOfMemoryError) {
                                 e.printStackTrace()
+                                Log.d("test", "failed2")
                             } catch (e: JSchException) {
                                 e.printStackTrace()
+                                Log.d("test", "failed3")
                             } catch (e: SftpException) {
                                 e.printStackTrace()
+                                Log.d("test", "failed4")
                             } finally {
                                 if (fis != null) {
                                     try {

@@ -102,10 +102,10 @@ class FirstFragment : Fragment() {
         binding.buttonFarred.setOnClickListener {
             val i = 0
 
-            findNavController().navigate(FirstFragmentDirections.actionFirstFragmentToFarRedFragment())
-//            val farredActivityIntent = Intent(context, FarRedActivity::class.java)
-//            farredActivityIntent.putExtra("UserId", userid)
-//            startActivity(farredActivityIntent)
+//            findNavController().navigate(FirstFragmentDirections.actionFirstFragmentToFarRedFragment())
+            val farredActivityIntent = Intent(context, FarRedActivity::class.java)
+            farredActivityIntent.putExtra("UserId", userid)
+            startActivity(farredActivityIntent)
         }
         binding.buttonPupAlz.setOnClickListener {
             if (Build.MODEL.toString() != "Pixel 4"){

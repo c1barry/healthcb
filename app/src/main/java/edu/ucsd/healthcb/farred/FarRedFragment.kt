@@ -2,7 +2,7 @@ package edu.ucsd.healthcb.farred
 
 /*
 Copyright Notice
-This software is Copyright © 2XXX The Regents of the University of California. All Rights Reserved. Permission to copy, modify, and distribute this software and its documentation for educational, research and non-profit purposes, without fee, and without a written agreement is hereby granted, provided that the above copyright notice, this paragraph and the following three paragraphs appear in all copies. Permission to make commercial use of this software may be obtained by contacting:
+This software is Copyright © 2XXX The Regents of the University of California. All Rights Reserved. Permission to copy, modify, and distribute this software and its documentation for educational, research and non-profit purposes, without fee, and without a written agreement is hereby granted, provided that the above copyright notice, this paragraph and the following three paragraphs appear in all copies. Permission to make commercial e of this software may be obtained by contacting:
 
 Office of Innovation and Commercialization
 9500 Gilman Drive, Mail Code 0910
@@ -24,11 +24,14 @@ import android.hardware.camera2.params.RggbChannelVector
 import android.hardware.camera2.params.TonemapCurve
 import android.media.*
 import android.os.*
+import android.speech.tts.TextToSpeech
 import android.util.Log
 import android.util.Range
 import android.util.Size
 import android.view.*
+import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import edu.ucsd.healthcb.Utils.getPreviewOutputSize
 import edu.ucsd.healthcb.databinding.FragmentFarredBinding
 import kotlinx.coroutines.*
@@ -46,6 +49,11 @@ class FarRedFragment: Fragment() {
     // onDestroyView.
     private val binding get() = _binding!!
 
+    /****** misc ******/
+    lateinit var digitspantest: TextToSpeech
+    var userid = "0"
+    var trialnum= 0
+    var testtype=""
     /** Detects, characterizes, and connects to a CameraDevice (used for all camera operations) */
     private val cameraManager: CameraManager by lazy {
         val context = requireContext().applicationContext
@@ -74,14 +82,14 @@ class FarRedFragment: Fragment() {
     /***************************************Camera Parameters *********************************/
 
     private var torchOn = false
-//    private val autoAE = CONTROL_AE_MODE_ON
-    private val autoAE = CameraCharacteristics.CONTROL_AE_MODE_OFF
+    private val autoAE = CameraCharacteristics.CONTROL_AE_MODE_ON
+//    private val autoAE = CameraCharacteristics.CONTROL_AE_MODE_OFF
 
     //    private val autoAWB = CONTROL_AWB_MODE_AUTO
     private val autoAWB = CameraCharacteristics.CONTROL_AWB_MODE_OFF
 
-    //    private val autoAF = CONTROL_AF_MODE_CONTINUOUS_VIDEO
-    private val autoAF = CameraCharacteristics.CONTROL_AF_MODE_OFF
+        private val autoAF = CameraCharacteristics.CONTROL_AF_MODE_CONTINUOUS_VIDEO
+//    private val autoAF = CameraCharacteristics.CONTROL_AF_MODE_OFF
 
 //    private var flashMode = CameraCharacteristics.FLASH_MODE_TORCH
     private var flashMode = CameraCharacteristics.FLASH_MODE_OFF
@@ -227,8 +235,8 @@ class FarRedFragment: Fragment() {
             this[CaptureRequest.TONEMAP_MODE] = CameraCharacteristics.TONEMAP_MODE_CONTRAST_CURVE
             this[CaptureRequest.TONEMAP_CURVE] = toneMap
             this[CaptureRequest.CONTROL_AF_MODE] = autoAF
-            this[CaptureRequest.LENS_FOCUS_DISTANCE] =
-                focalRatio * characteristics[CameraCharacteristics.LENS_INFO_MINIMUM_FOCUS_DISTANCE]!!
+//            this[CaptureRequest.LENS_FOCUS_DISTANCE] =
+//                focalRatio * characteristics[CameraCharacteristics.LENS_INFO_MINIMUM_FOCUS_DISTANCE]!!
             addTarget(binding.viewFinder.holder.surface)
         }.build()
     }
@@ -363,10 +371,20 @@ class FarRedFragment: Fragment() {
         // Button press triggers PLR test
         binding.buttonTest.setOnClickListener {
             GlobalScope.launch(Dispatchers.IO) {
-                binding.buttonTest.text="Testing"
-                binding.buttonTest.isEnabled=false
+                lifecycleScope.launch(){
+                    binding.buttonTest.text="Testing"
+                    binding.buttonTest.isEnabled=false
+                    binding.buttonDigitspan.isEnabled=false
+                    binding.buttonDigitspan.text="Testing"
+                }
+                testtype="plr"
+                userid = binding.userIDNumber.text.toString()
+                if (binding.trialNumber.text.toString() != ""){
+                    trialnum = binding.trialNumber.text.toString().toInt()
+                }
+
                 session.stopRepeating()
-                setupRecorder(recorderSurface,"STEP")
+                setupRecorder(recorderSurface,"PLR")
                 session.setRepeatingRequest(recordRequest, null, cameraHandler)
                 delay(1000) //time before light on
                 toggleTorch() //toggle flashlight on
@@ -374,12 +392,82 @@ class FarRedFragment: Fragment() {
                 toggleTorch() //toggle flashlight off
                 delay(5000) //time after light off
                 recorder?.stop()
-                binding.buttonTest.text="Start Test"
-                binding.buttonTest.isEnabled=true
+                lifecycleScope.launch(){
+                    binding.buttonTest.text="Start Test"
+                    binding.buttonTest.isEnabled=true
+                    binding.buttonDigitspan.isEnabled=true
+                    binding.buttonDigitspan.text="Digit Span"
+                    try{
+                        Log.d("trialnum", trialnum.toString())
+                        binding.trialNumber.setText((trialnum+1).toString())
+                    }catch(error:Error){
+                        Log.d("iterative trial num", error.toString())
+                    }
+                }
+            }
+
+        }
+
+        //button press triggers digit span test
+        binding.buttonDigitspan.setOnClickListener {
+            GlobalScope.launch(Dispatchers.IO) {
+                lifecycleScope.launch(){
+                    binding.buttonTest.text="Testing"
+                    binding.buttonTest.isEnabled=false
+                    binding.buttonDigitspan.isEnabled=false
+                    binding.buttonDigitspan.text="Testing"
+                }
+                testtype="dig"
+                userid = binding.userIDNumber.text.toString()
+                if (binding.trialNumber.text.toString() != ""){
+                    trialnum = binding.trialNumber.text.toString().toInt()
+                }
+                session.stopRepeating()
+                setupRecorder(recorderSurface,"SPAN")
+                session.setRepeatingRequest(recordRequest, null, cameraHandler)
+                digitSpan()
+                delay(7000)
+                digitspantest.stop()
+                recorder?.stop()
+                lifecycleScope.launch(){
+                    binding.buttonTest.text="Start Test"
+                    binding.buttonTest.isEnabled=true
+                    binding.buttonDigitspan.isEnabled=true
+                    binding.buttonDigitspan.text="Digit Span"
+                    try{
+                        Log.d("trialnum", trialnum.toString())
+                        binding.trialNumber.setText((trialnum+1).toString())
+                    }catch(error:Error){
+                        Log.d("iterative trial num", error.toString())
+                    }
+                }
+
             }
         }
     }
 
+    private fun digitSpan(){
+        digitspantest = TextToSpeech(context) { status ->
+            if (status != TextToSpeech.ERROR) {
+                digitspantest.language = Locale.US
+                digitspantest.setSpeechRate(0.7F)
+            }
+        }
+        lifecycleScope.launch(){
+            digitspantest.speak("Ready", TextToSpeech.QUEUE_FLUSH, null)
+            delay(1000)
+            val digitspannums = intArrayOf(1, 2, 3, 4, 5, 6, 7, 8, 9)
+            val numberOfDigits=5
+            digitspannums.shuffle()
+            for (i in 1..numberOfDigits) {
+                val toSpeak = digitspannums[i - 1].toString()
+                digitspantest.speak(toSpeak, TextToSpeech.QUEUE_FLUSH, null)
+                delay(1000)
+            }
+            digitspantest.speak("repeat", TextToSpeech.QUEUE_FLUSH, null)
+        }
+
+    }
     private fun toggleTorch(){
             GlobalScope.launch {
 //                session.stopRepeating()
@@ -495,20 +583,29 @@ class FarRedFragment: Fragment() {
         recorder?.release()
         recorderSurface.release()
     }
+    /** Creates a [File] named with the current date and time */
+    private fun createFile(context: Context, extension: String): File {
+        val mediaDir: String =
+            "${Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM)}/Camera"
+        val sdf = SimpleDateFormat("yyyy_MM_dd_HH_mm_ss_SSS", Locale.US)
+        return File(mediaDir, "FarRed_"
+            .plus(userid)
+            .plus("_")
+            .plus(trialnum.toString())
+            .plus("_")
+            .plus(testtype)
+            .plus("_${sdf.format(Date())}.$extension"))
+//            return File(context.filesDir, "VID_${sdf.format(Date())}.$extension")
+    }
+
+
     companion object {
         private val TAG = FarRedFragment::class.java.simpleName
 
         private const val RECORDER_VIDEO_BITRATE: Int = 10_000_000
         private const val MIN_REQUIRED_RECORDING_TIME_MILLIS: Long = 1000L
 
-        /** Creates a [File] named with the current date and time */
-        private fun createFile(context: Context, extension: String): File {
-            val mediaDir: String =
-                "${Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM)}/Camera"
-            val sdf = SimpleDateFormat("yyyy_MM_dd_HH_mm_ss_SSS", Locale.US)
-            return File(mediaDir, "VID_${sdf.format(Date())}.$extension")
-//            return File(context.filesDir, "VID_${sdf.format(Date())}.$extension")
-        }
+
         private data class CameraInfo(
             val name: String,
             val orientation: String,
