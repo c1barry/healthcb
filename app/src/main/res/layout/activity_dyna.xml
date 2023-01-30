@@ -112,7 +112,7 @@
         android:id="@+id/Dyna"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="3 Second Grip Stength Test"
+        android:text="VibroGrip"
         android:textColor="@color/black"
         android:textSize="32dp"
         app:layout_constraintEnd_toEndOf="parent"

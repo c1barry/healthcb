@@ -44,6 +44,7 @@ import android.os.*
 import android.text.SpannableStringBuilder
 import android.util.Log
 import android.util.Range
+import android.view.KeyEvent
 import android.view.Surface
 import android.view.SurfaceView
 import android.view.WindowManager
@@ -115,7 +116,7 @@ class DynaActivity : AppCompatActivity(), SensorEventListener {
         Manifest.permission.MANAGE_EXTERNAL_STORAGE,
         Manifest.permission.MANAGE_DOCUMENTS
     )
-    private val xformatter by lazy { LineAndPointFormatter(Color.RED, null, null, null) }
+    private val xformatter by lazy { LineAndPointFormatter(Color.GREEN, null, null, null) }
     private val guideformatter by lazy {LineAndPointFormatter(Color.GREEN, null, null, null)}
     private val yformatter by lazy { LineAndPointFormatter(Color.GREEN, null, null, null) }
     private val zformatter by lazy { LineAndPointFormatter(Color.BLUE, null, null, null) }
@@ -157,7 +158,7 @@ class DynaActivity : AppCompatActivity(), SensorEventListener {
     private var ygyroBufferQueue: Queue<Double> = LinkedList<Double>()
     private var zgyroBufferQueue: Queue<Double> = LinkedList<Double>()
 
-    private val recordSeconds = 10000L //total length of recording
+    private val recordSeconds = 6000L //total length of recording
     private val delayTime = 2500L // Delay time during recording before and after squeeze
 
 //    private lateinit var view_finder: SurfaceView
@@ -461,6 +462,31 @@ class DynaActivity : AppCompatActivity(), SensorEventListener {
 
             }
 
+        }
+
+    }
+
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        val action: Int
+        val keycode: Int
+        action = event.action
+        keycode = event.keyCode
+        when (keycode) {
+            KeyEvent.KEYCODE_VOLUME_UP -> {
+                if (KeyEvent.ACTION_UP === action) {
+                    CalibrationButton.performClick()
+                }
+            }
+            KeyEvent.KEYCODE_VOLUME_DOWN -> {
+                if (KeyEvent.ACTION_DOWN == action){
+                    CalibrationButton.performClick()
+                }
+            }
+        }
+        if (KeyEvent.ACTION_UP === action || KeyEvent.ACTION_DOWN == action) {
+            return true
+        }else{
+            return super.dispatchKeyEvent(event)
         }
 
     }

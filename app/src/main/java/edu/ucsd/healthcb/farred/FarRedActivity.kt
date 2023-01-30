@@ -90,6 +90,10 @@ class FarRedActivity: AppCompatActivity() {
                 }
             }
         }
-        return super.dispatchKeyEvent(event)
+        if (KeyEvent.ACTION_UP === action || KeyEvent.ACTION_DOWN == action) {
+            return true
+        }else{
+            return super.dispatchKeyEvent(event)
+        }
     }
 }
