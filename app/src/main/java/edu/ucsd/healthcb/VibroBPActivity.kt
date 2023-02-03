@@ -1288,8 +1288,6 @@ class VibroBPActivity : AppCompatActivity(), SensorEventListener {
                 CalibrationButton.text = "Start Test"
                 accelplot.removeSeries(forceaccelSeries)
                 accelplot.removeSeries(forceGuideSeries)
-
-
             }
         }
     }
@@ -1303,19 +1301,18 @@ class VibroBPActivity : AppCompatActivity(), SensorEventListener {
             KeyEvent.KEYCODE_VOLUME_UP -> {
                 if (KeyEvent.ACTION_UP === action) {
                     CalibrationButton.performClick()
+                    return true
                 }
             }
             KeyEvent.KEYCODE_VOLUME_DOWN -> {
                 if (KeyEvent.ACTION_DOWN == action){
                     isoButton.performClick()
+                    return true
                 }
             }
         }
-        if (KeyEvent.ACTION_UP === action || KeyEvent.ACTION_DOWN == action) {
-            return true
-        }else{
-            return super.dispatchKeyEvent(event)
-        }
+
+        return super.dispatchKeyEvent(event)
 
     }
 

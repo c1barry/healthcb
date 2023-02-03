@@ -151,7 +151,7 @@ class FarRedFragment: Fragment() {
 
     private fun setupRecorder(surface: Surface, expName: String) {
         recorder?.release()
-        outputFile = createFile(requireContext(),"mp4")
+//        outputFile = createFile(requireContext(),"mp4")
         recorder = MediaRecorder().apply {
             setVideoSource(MediaRecorder.VideoSource.SURFACE)
             setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
@@ -387,10 +387,10 @@ class FarRedFragment: Fragment() {
                 setupRecorder(recorderSurface,"PLR")
                 session.setRepeatingRequest(recordRequest, null, cameraHandler)
                 delay(1000) //time before light on
-//                toggleTorch() //toggle flashlight on
+                toggleTorch() //toggle flashlight on
                 delay(2000) //time with light on
-//                toggleTorch() //toggle flashlight off
-                delay(5000) //time after light off
+                toggleTorch() //toggle flashlight off
+                delay(2000) //time after light off
                 recorder?.stop()
                 lifecycleScope.launch(){
                     binding.buttonTest.text="PLR Test"
@@ -426,7 +426,7 @@ class FarRedFragment: Fragment() {
                 setupRecorder(recorderSurface,"SPAN")
                 session.setRepeatingRequest(recordRequest, null, cameraHandler)
                 digitSpan()
-                delay(7000)
+                delay(5000)
                 digitspantest.stop()
                 recorder?.stop()
                 lifecycleScope.launch(){
@@ -457,7 +457,7 @@ class FarRedFragment: Fragment() {
             digitspantest.speak("Ready", TextToSpeech.QUEUE_FLUSH, null)
             delay(1000)
             val digitspannums = intArrayOf(1, 2, 3, 4, 5, 6, 7, 8, 9)
-            val numberOfDigits=5
+            val numberOfDigits=3
             digitspannums.shuffle()
             for (i in 1..numberOfDigits) {
                 val toSpeak = digitspannums[i - 1].toString()
@@ -480,33 +480,32 @@ class FarRedFragment: Fragment() {
                     Log.d("torch", "flash on")
                 }
 
-//                cameraManager.setTorchMode("0",true)
-//                session.setRepeatingRequest(session.device.createCaptureRequest(CameraDevice.TEMPLATE_RECORD).apply {
-//                    // Add the preview and recording surface target
-//                    this[CaptureRequest.FLASH_MODE] = flashMode
-//                    this[CaptureRequest.LENS_OPTICAL_STABILIZATION_MODE] =
-//                        CameraCharacteristics.LENS_OPTICAL_STABILIZATION_MODE_OFF
-//                    this[CaptureRequest.CONTROL_AE_MODE] = autoAE
-//                    this[CaptureRequest.CONTROL_AWB_MODE] = autoAWB
-//                    this[CaptureRequest.CONTROL_AE_LOCK] = ae_lock
-//                    this[CaptureRequest.CONTROL_AWB_LOCK] = awb_lock
-//                    this[CaptureRequest.SENSOR_SENSITIVITY] = sensitivity
-//                    this[CaptureRequest.CONTROL_POST_RAW_SENSITIVITY_BOOST] = boost
-//                    this[CaptureRequest.SENSOR_FRAME_DURATION] = frameDuration
-//                    this[CaptureRequest.SENSOR_EXPOSURE_TIME] = exposureTime
-//                    this[CaptureRequest.COLOR_CORRECTION_GAINS] = colorCorrectinGain
-//                    this[CaptureRequest.COLOR_CORRECTION_TRANSFORM] = ColorSpaceTransform(colorCorrectionTransform)
-//                    this[CaptureRequest.COLOR_CORRECTION_MODE] = colorCorrectionMode
-//                    this[CaptureRequest.TONEMAP_MODE] = CameraCharacteristics.TONEMAP_MODE_CONTRAST_CURVE
-//                    this[CaptureRequest.TONEMAP_CURVE] = toneMap
-//                    this[CaptureRequest.CONTROL_AF_MODE] = autoAF
-//                    this[CaptureRequest.LENS_FOCUS_DISTANCE] =
-//                        focalRatio * characteristics[CameraCharacteristics.LENS_INFO_MINIMUM_FOCUS_DISTANCE]!!
-//                    addTarget(binding.viewFinder.holder.surface)
-//                    addTarget(recorderSurface)
-//                    // Sets user requested FPS for all targets
-//                    set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, Range(cameraFps, cameraFps))
-//                }.build(), null, cameraHandler)
+                session.setRepeatingRequest(session.device.createCaptureRequest(CameraDevice.TEMPLATE_RECORD).apply {
+                    // Add the preview and recording surface target
+                    this[CaptureRequest.FLASH_MODE] = flashMode
+                    this[CaptureRequest.LENS_OPTICAL_STABILIZATION_MODE] =
+                        CameraCharacteristics.LENS_OPTICAL_STABILIZATION_MODE_OFF
+                    this[CaptureRequest.CONTROL_AE_MODE] = autoAE
+                    this[CaptureRequest.CONTROL_AWB_MODE] = autoAWB
+                    this[CaptureRequest.CONTROL_AE_LOCK] = ae_lock
+                    this[CaptureRequest.CONTROL_AWB_LOCK] = awb_lock
+                    this[CaptureRequest.SENSOR_SENSITIVITY] = sensitivity
+                    this[CaptureRequest.CONTROL_POST_RAW_SENSITIVITY_BOOST] = boost
+                    this[CaptureRequest.SENSOR_FRAME_DURATION] = frameDuration
+                    this[CaptureRequest.SENSOR_EXPOSURE_TIME] = exposureTime
+                    this[CaptureRequest.COLOR_CORRECTION_GAINS] = colorCorrectinGain
+                    this[CaptureRequest.COLOR_CORRECTION_TRANSFORM] = ColorSpaceTransform(colorCorrectionTransform)
+                    this[CaptureRequest.COLOR_CORRECTION_MODE] = colorCorrectionMode
+                    this[CaptureRequest.TONEMAP_MODE] = CameraCharacteristics.TONEMAP_MODE_CONTRAST_CURVE
+                    this[CaptureRequest.TONEMAP_CURVE] = toneMap
+                    this[CaptureRequest.CONTROL_AF_MODE] = autoAF
+                    this[CaptureRequest.LENS_FOCUS_DISTANCE] =
+                        focalRatio * characteristics[CameraCharacteristics.LENS_INFO_MINIMUM_FOCUS_DISTANCE]!!
+                    addTarget(binding.viewFinder.holder.surface)
+                    addTarget(recorderSurface)
+                    // Sets user requested FPS for all targets
+                    set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, Range(cameraFps, cameraFps))
+                }.build(), null, cameraHandler)
                 torchOn=!torchOn
 
             }

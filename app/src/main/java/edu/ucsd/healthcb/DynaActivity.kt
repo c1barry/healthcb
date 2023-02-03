@@ -63,6 +63,8 @@ import com.androidplot.xy.*
 import com.github.psambit9791.jdsp.filter.Butterworth
 import com.github.psambit9791.jdsp.misc.UtilMethods
 import com.jcraft.jsch.*
+import edu.ucsd.healthcb.databinding.ActivityDynaBinding
+import edu.ucsd.healthcb.databinding.ActivityMainBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -240,11 +242,15 @@ class DynaActivity : AppCompatActivity(), SensorEventListener {
         }
     }
 
+    private lateinit var binding: ActivityDynaBinding
+
 
     @RequiresApi(Build.VERSION_CODES.S)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_dyna)
+
+        binding = ActivityDynaBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         mVibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator?
 //        mVibrator = vibrationManager.defaultVibrator
@@ -255,8 +261,8 @@ class DynaActivity : AppCompatActivity(), SensorEventListener {
         verifyStoragePermissions(this)
         verifyCameraPermissions(this)
         verifyVibratePermissions(this)
-        var vibrateButton: Button = findViewById<Button>(R.id.vibrateButton)
-        var lockScreenButton: Button = findViewById<Button>(R.id.lockScreenButton)
+        val vibrateButton= binding.vibrateButton
+        val lockScreenButton = binding.lockScreenButton
         lineText =findViewById(R.id.lineText)
         lockScreenButton.setOnClickListener {
             if (isScreenLocked){
@@ -302,12 +308,13 @@ class DynaActivity : AppCompatActivity(), SensorEventListener {
         CalibrationButton=findViewById(R.id.CalibrationButton)
         var background =findViewById<ConstraintLayout>(R.id.constraint_layout)
         var accelButton:Button=findViewById(R.id.accelButton)
-        var idNumberText = findViewById<EditText>(R.id.idNumber)
+//        var idNumberText = binding.idNumber
         var gripStrengthText = findViewById<EditText>(R.id.gripStrength)
         var trialNumberText = findViewById<EditText>(R.id.trialNumber)
+
         recordButton.setOnClickListener {
             try{
-                userIDnumber = idNumberText.text.toString().toInt()
+                userIDnumber = binding.idNumber.text.toString().toInt()
                 trialNumber = trialNumberText.text.toString().toInt()
                 gripStrength = gripStrengthText.text.toString().toDouble()
             }catch(E:Exception){
@@ -328,7 +335,7 @@ class DynaActivity : AppCompatActivity(), SensorEventListener {
             isRecording = true
 
             lifecycleScope.launch() {
-                Toast.makeText(applicationContext, "Recording Grip", Toast.LENGTH_LONG).show()
+//                Toast.makeText(applicationContext, "Recording Grip", Toast.LENGTH_LONG).show()
                 if (fsr_testing){
                     val testing_record_seconds = 50*1000L
                     delay(testing_record_seconds)
@@ -388,7 +395,7 @@ class DynaActivity : AppCompatActivity(), SensorEventListener {
                 accelMax = -999.0
                 accelMin = 999.0
                 calibrationMode = true
-                delay(1000)
+                delay(delayTime)
                 calibrationMode = false
 
                 accelplot.removeSeries(accelChannels[currentChannel])
@@ -474,20 +481,19 @@ class DynaActivity : AppCompatActivity(), SensorEventListener {
         when (keycode) {
             KeyEvent.KEYCODE_VOLUME_UP -> {
                 if (KeyEvent.ACTION_UP === action) {
-                    CalibrationButton.performClick()
+                    binding.CalibrationButton.performClick()
+                    return true
                 }
             }
             KeyEvent.KEYCODE_VOLUME_DOWN -> {
                 if (KeyEvent.ACTION_DOWN == action){
-                    CalibrationButton.performClick()
+                    binding.CalibrationButton.performClick()
+                    return true
                 }
             }
         }
-        if (KeyEvent.ACTION_UP === action || KeyEvent.ACTION_DOWN == action) {
-            return true
-        }else{
-            return super.dispatchKeyEvent(event)
-        }
+
+        return super.dispatchKeyEvent(event)
 
     }
 
