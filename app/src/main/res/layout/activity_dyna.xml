@@ -31,7 +31,8 @@
         app:lineLabelRotationBottom="-45"
         app:lineLabels="left|bottom"
         app:rangeTitle="range"
-        app:title="Force (Accelerometer) Plot" />
+        app:title="Force (Accelerometer) Plot"
+        android:visibility="invisible"/>
 
     <com.androidplot.xy.XYPlot
         android:id="@+id/ppgplot"
@@ -102,6 +103,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Switch Channel"
+        android:visibility="invisible"
 
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/vibrateButton"

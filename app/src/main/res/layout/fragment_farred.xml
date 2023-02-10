@@ -101,6 +101,24 @@
         android:layout_marginTop="150dp"
         android:layout_marginBottom="100dp"
         />
+
+    <ImageView
+        android:id="@+id/upArrow"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@android:drawable/arrow_up_float"
+        app:layout_constraintBottom_toTopOf="@id/button_digitspan"
+        android:layout_marginLeft="90dp"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <ImageView
+        android:id="@+id/downArrow"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@android:drawable/arrow_down_float"
+        app:layout_constraintBottom_toTopOf="@id/button_test"
+        android:layout_marginRight="80dp"
+        app:layout_constraintEnd_toEndOf="parent" />
     <!--    <edu.ucsd.healthcb.Utils.AutoFitSurfaceView-->
     <!--        android:id="@+id/view_finder"-->
     <!--        android:layout_width="match_parent"-->

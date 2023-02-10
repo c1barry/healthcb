@@ -175,11 +175,11 @@ class VibroBPActivity : AppCompatActivity(), SensorEventListener {
 
     /********************************** File Saving ***********************************/
     private var filestoupload: MutableList<File> = mutableListOf()
-    private var userIDnumber = 0
+    private var userIDnumber = "0"
     private var trialNumber = 0
-    private var pulse = 0
-    private var sys=0
-    private var dia=0
+    private var pulse = "0"
+    private var sys="0"
+    private var dia="0"
 
     /** Creates a [MediaRecorder] instance using the provided [Surface] as input */
     private fun createRecorder(surface: Surface) = MediaRecorder().apply {
@@ -445,8 +445,8 @@ class VibroBPActivity : AppCompatActivity(), SensorEventListener {
                 if (correctISO == true){
                     Log.d("sensitivity", "luma: ".plus(luma.toString()))
                     session.stopRepeating()
-                    val minthresh = 120
-                    val maxthresh = 170
+                    val minthresh = 50
+                    val maxthresh = 100
                     if (luma>maxthresh){
                         sensitivity= abs(sensitivity-abs(luma-minthresh)).toInt()
                     }else if (luma<minthresh){
@@ -456,6 +456,7 @@ class VibroBPActivity : AppCompatActivity(), SensorEventListener {
                         correctISO=false
                         Log.d("sensitivity", "STOP!!!!!!!")
                     }
+
                     session.setRepeatingRequest(session.device.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW).apply {
                         // Add the preview surface target
 //            this[CaptureRequest.FLASH_MODE] = flashMode
@@ -1067,40 +1068,28 @@ class VibroBPActivity : AppCompatActivity(), SensorEventListener {
         recordButton.setOnClickListener {
             val seconds = seconds.toLong()
             try {
-                userIDnumber = idNumberText.text.toString().toInt()
-                trialNumber = trialNumberText.text.toString().toInt()
+                userIDnumber = idNumberText.text.toString()
+                trialNumber = Integer.parseInt(trialNumberText.text.toString())
             }catch(E:Exception){
-                userIDnumber=0
+                userIDnumber="0"
                 trialNumber=0
                 idNumberText.setText(userIDnumber.toString())
                 trialNumberText.setText(trialNumber.toString())
             }
             try {
-                pulse = pulseText.text.toString().toInt()
-                sys = sysText.text.toString().toInt()
-                dia = diaText.text.toString().toInt()
+                pulse = pulseText.text.toString()
+                sys = sysText.text.toString()
+                dia = diaText.text.toString()
             }catch (E:Exception){
-                pulse=0
-                sys=0
-                dia=0
+                pulse="0"
+                sys="0"
+                dia="0"
                 pulseText.setText(pulse.toString())
                 sysText.setText(sys.toString())
                 diaText.setText(dia.toString())
             }
 
-//            if (isRecording){
-//            isRecording = !isRecording
-//            writer.flush()
-//            ppgwriter.flush()
-//            gyrowriter.flush()
-//            writer.close()
-//            ppgwriter.close()
-//            gyrowriter.close()
-//            recordButton.text = "Record"
-//            if (filestoupload.size >=1){
-//                uploadFileArrayToNassftp(filestoupload)
-//            }
-//            }else{
+
             xaccelMeasurements = floatArrayOf()
             yaccelMeasurements = floatArrayOf()
             zaccelMeasurements = floatArrayOf()
@@ -1237,22 +1226,13 @@ class VibroBPActivity : AppCompatActivity(), SensorEventListener {
                 ppgplot.removeSeries(ppgSeries)
                 val plotSeconds = seconds
                 var calibratedRange = accelCounter*plotSeconds
-                var calibratedGyroRange = gyroCounter*plotSeconds
-//                xgyroSeries = accelModel(calibratedGyroRange, calibratedGyroRange)
-//                ygyroSeries = accelModel(calibratedGyroRange, calibratedGyroRange)
-//                zgyroSeries = accelModel(calibratedGyroRange, calibratedGyroRange)
-//                xaccelSeries = accelModel(calibratedRange, calibratedRange)
-//                yaccelSeries = accelModel(calibratedRange, calibratedRange)
-//                zaccelSeries = accelModel(calibratedRange, calibratedRange)
+
                 forceGuideSeries = accelModel(calibratedRange, calibratedRange)
                 forceaccelSeries = accelModel(calibratedRange, calibratedRange)
 
-//                accelChannels = listOf(forceaccelSeries, xgyroSeries, ygyroSeries, zgyroSeries, xaccelSeries, yaccelSeries, zaccelSeries)
-//                ppgSeries = ppgModel(ppgCounter*plotSeconds, ppgCounter*plotSeconds)
                 accelplot.setDomainBoundaries(0, calibratedRange, BoundaryMode.FIXED)
                 accelplot.setRangeBoundaries(140,170,BoundaryMode.FIXED)
-//                ppgplot.setRangeBoundaries(-15,15,BoundaryMode.FIXED)
-//                ppgplot.setDomainBoundaries(0,ppgCounter*plotSeconds,BoundaryMode.FIXED)
+
                 Log.d(TAG, "ppgCounter = ".plus(ppgCounter))
                 Log.d(TAG, "accel Sample Rate = ".plus(accelCounter).plus("Hz"))
                 Log.d(TAG, "gyro Sample Rate = ".plus(gyroCounter).plus("Hz"))
@@ -1301,14 +1281,14 @@ class VibroBPActivity : AppCompatActivity(), SensorEventListener {
             KeyEvent.KEYCODE_VOLUME_UP -> {
                 if (KeyEvent.ACTION_UP === action) {
                     CalibrationButton.performClick()
-                    return true
                 }
+                return true
             }
             KeyEvent.KEYCODE_VOLUME_DOWN -> {
                 if (KeyEvent.ACTION_DOWN == action){
                     isoButton.performClick()
-                    return true
                 }
+                return true
             }
         }
 
@@ -1516,7 +1496,7 @@ class VibroBPActivity : AppCompatActivity(), SensorEventListener {
     }
 
     override fun onAccuracyChanged(p0: Sensor?, p1: Int) {
-        Toast.makeText(this, "Accuracy Change", Toast.LENGTH_LONG)
+//        Toast.makeText(this, "Accuracy Change", Toast.LENGTH_LONG)
     }
 
     override fun onResume() {
@@ -1531,7 +1511,7 @@ class VibroBPActivity : AppCompatActivity(), SensorEventListener {
     override fun onPause() {
         super.onPause()
         sensorManager.unregisterListener(this)
-//        session.stopRepeating()
+        session.stopRepeating()
     }
     @RequiresApi(Build.VERSION_CODES.R)
     fun verifyStoragePermissions(activity: Activity?) {

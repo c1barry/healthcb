@@ -77,20 +77,23 @@ class FarRedActivity: AppCompatActivity() {
         action = event.action
         keycode = event.keyCode
         when (keycode) {
-            KeyEvent.KEYCODE_VOLUME_UP -> {
-                if (KeyEvent.ACTION_UP === action) {
-                    plrButton.performClick()
-                    return true
-                }
-            }
             KeyEvent.KEYCODE_VOLUME_DOWN -> {
-                if (KeyEvent.ACTION_DOWN == action){
-                    dsButton.performClick()
-                    return true
+                if (KeyEvent.ACTION_DOWN == action) {
+                    plrButton.performClick()
+                    Log.d("volume down", action.toString())
                 }
+                return true
+            }
+            KeyEvent.KEYCODE_VOLUME_UP -> {
+                if (KeyEvent.ACTION_UP == action) {
+                    dsButton.performClick()
+                    Log.d("volume up", action.toString())
+                }
+                return true
             }
         }
-
         return super.dispatchKeyEvent(event)
+
+
     }
 }

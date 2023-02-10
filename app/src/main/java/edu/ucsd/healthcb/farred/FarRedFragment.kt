@@ -173,6 +173,7 @@ class FarRedFragment: Fragment() {
         setVideoSource(MediaRecorder.VideoSource.SURFACE)
         setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
         setVideoFrameRate(cameraFps)
+        Log.d("userid_createRecorder", userid)
         outputFile = createFile(requireContext(),"mp4")//setupOutputFile("")
         setOutputFile(outputFile.absolutePath)
         setVideoEncodingBitRate(RECORDER_VIDEO_BITRATE)
@@ -215,26 +216,26 @@ class FarRedFragment: Fragment() {
         session.device.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW).apply {
             // Add the preview surface target
             this[CaptureRequest.FLASH_MODE] = flashMode
-            this[CaptureRequest.LENS_OPTICAL_STABILIZATION_MODE] =
-                CameraCharacteristics.LENS_OPTICAL_STABILIZATION_MODE_OFF
+//            this[CaptureRequest.LENS_OPTICAL_STABILIZATION_MODE] =
+//                CameraCharacteristics.LENS_OPTICAL_STABILIZATION_MODE_OFF
 //            this[CaptureRequest.LENS_APERTURE] = characteristics[LENS_INFO_AVAILABLE_APERTURES]!![0]
-            Log.d("rt", characteristics[CameraCharacteristics.CONTROL_POST_RAW_SENSITIVITY_BOOST_RANGE]!!.toString())
-            Log.d("rt", characteristics[CameraCharacteristics.SENSOR_INFO_SENSITIVITY_RANGE]!!.toString())
-            Log.d("rt", characteristics[CameraCharacteristics.SENSOR_INFO_EXPOSURE_TIME_RANGE]!!.toString())
-            this[CaptureRequest.CONTROL_AE_MODE] = autoAE
-            this[CaptureRequest.CONTROL_AWB_MODE] = autoAWB
-            this[CaptureRequest.CONTROL_AE_LOCK] = ae_lock
-            this[CaptureRequest.CONTROL_AWB_LOCK] = awb_lock
-            this[CaptureRequest.SENSOR_SENSITIVITY] = sensitivity
-            this[CaptureRequest.CONTROL_POST_RAW_SENSITIVITY_BOOST] = boost
-            this[CaptureRequest.SENSOR_FRAME_DURATION] = frameDuration
-            this[CaptureRequest.SENSOR_EXPOSURE_TIME] = exposureTime
-            this[CaptureRequest.COLOR_CORRECTION_GAINS] = colorCorrectinGain
-            this[CaptureRequest.COLOR_CORRECTION_TRANSFORM] = ColorSpaceTransform(colorCorrectionTransform)
-            this[CaptureRequest.COLOR_CORRECTION_MODE] = colorCorrectionMode
-            this[CaptureRequest.TONEMAP_MODE] = CameraCharacteristics.TONEMAP_MODE_CONTRAST_CURVE
-            this[CaptureRequest.TONEMAP_CURVE] = toneMap
-            this[CaptureRequest.CONTROL_AF_MODE] = autoAF
+//            Log.d("rt", characteristics[CameraCharacteristics.CONTROL_POST_RAW_SENSITIVITY_BOOST_RANGE]!!.toString())
+//            Log.d("rt", characteristics[CameraCharacteristics.SENSOR_INFO_SENSITIVITY_RANGE]!!.toString())
+//            Log.d("rt", characteristics[CameraCharacteristics.SENSOR_INFO_EXPOSURE_TIME_RANGE]!!.toString())
+//            this[CaptureRequest.CONTROL_AE_MODE] = autoAE
+//            this[CaptureRequest.CONTROL_AWB_MODE] = autoAWB
+//            this[CaptureRequest.CONTROL_AE_LOCK] = ae_lock
+//            this[CaptureRequest.CONTROL_AWB_LOCK] = awb_lock
+//            this[CaptureRequest.SENSOR_SENSITIVITY] = sensitivity
+//            this[CaptureRequest.CONTROL_POST_RAW_SENSITIVITY_BOOST] = boost
+//            this[CaptureRequest.SENSOR_FRAME_DURATION] = frameDuration
+//            this[CaptureRequest.SENSOR_EXPOSURE_TIME] = exposureTime
+//            this[CaptureRequest.COLOR_CORRECTION_GAINS] = colorCorrectinGain
+//            this[CaptureRequest.COLOR_CORRECTION_TRANSFORM] = ColorSpaceTransform(colorCorrectionTransform)
+//            this[CaptureRequest.COLOR_CORRECTION_MODE] = colorCorrectionMode
+//            this[CaptureRequest.TONEMAP_MODE] = CameraCharacteristics.TONEMAP_MODE_CONTRAST_CURVE
+//            this[CaptureRequest.TONEMAP_CURVE] = toneMap
+//            this[CaptureRequest.CONTROL_AF_MODE] = autoAF
 //            this[CaptureRequest.LENS_FOCUS_DISTANCE] =
 //                focalRatio * characteristics[CameraCharacteristics.LENS_INFO_MINIMUM_FOCUS_DISTANCE]!!
             addTarget(binding.viewFinder.holder.surface)
@@ -247,24 +248,24 @@ class FarRedFragment: Fragment() {
         session.device.createCaptureRequest(CameraDevice.TEMPLATE_RECORD).apply {
             // Add the preview and recording surface targets
             this[CaptureRequest.FLASH_MODE] = flashMode
-            this[CaptureRequest.LENS_OPTICAL_STABILIZATION_MODE] =
-                CameraCharacteristics.LENS_OPTICAL_STABILIZATION_MODE_OFF
-            this[CaptureRequest.CONTROL_AE_MODE] = autoAE
-            this[CaptureRequest.CONTROL_AWB_MODE] = autoAWB
-            this[CaptureRequest.CONTROL_AE_LOCK] = ae_lock
-            this[CaptureRequest.CONTROL_AWB_LOCK] = awb_lock
-            this[CaptureRequest.SENSOR_SENSITIVITY] = sensitivity
-            this[CaptureRequest.CONTROL_POST_RAW_SENSITIVITY_BOOST] = boost
-            this[CaptureRequest.SENSOR_FRAME_DURATION] = frameDuration
-            this[CaptureRequest.SENSOR_EXPOSURE_TIME] = exposureTime
-            this[CaptureRequest.COLOR_CORRECTION_GAINS] = colorCorrectinGain
-            this[CaptureRequest.COLOR_CORRECTION_TRANSFORM] = ColorSpaceTransform(colorCorrectionTransform)
-            this[CaptureRequest.COLOR_CORRECTION_MODE] = colorCorrectionMode
-            this[CaptureRequest.TONEMAP_MODE] = CameraCharacteristics.TONEMAP_MODE_CONTRAST_CURVE
-            this[CaptureRequest.TONEMAP_CURVE] = toneMap
-            this[CaptureRequest.CONTROL_AF_MODE] = autoAF
-            this[CaptureRequest.LENS_FOCUS_DISTANCE] =
-                focalRatio * characteristics[CameraCharacteristics.LENS_INFO_MINIMUM_FOCUS_DISTANCE]!!
+//            this[CaptureRequest.LENS_OPTICAL_STABILIZATION_MODE] =
+//                CameraCharacteristics.LENS_OPTICAL_STABILIZATION_MODE_OFF
+//            this[CaptureRequest.CONTROL_AE_MODE] = autoAE
+//            this[CaptureRequest.CONTROL_AWB_MODE] = autoAWB
+//            this[CaptureRequest.CONTROL_AE_LOCK] = ae_lock
+//            this[CaptureRequest.CONTROL_AWB_LOCK] = awb_lock
+//            this[CaptureRequest.SENSOR_SENSITIVITY] = sensitivity
+//            this[CaptureRequest.CONTROL_POST_RAW_SENSITIVITY_BOOST] = boost
+//            this[CaptureRequest.SENSOR_FRAME_DURATION] = frameDuration
+//            this[CaptureRequest.SENSOR_EXPOSURE_TIME] = exposureTime
+//            this[CaptureRequest.COLOR_CORRECTION_GAINS] = colorCorrectinGain
+//            this[CaptureRequest.COLOR_CORRECTION_TRANSFORM] = ColorSpaceTransform(colorCorrectionTransform)
+//            this[CaptureRequest.COLOR_CORRECTION_MODE] = colorCorrectionMode
+//            this[CaptureRequest.TONEMAP_MODE] = CameraCharacteristics.TONEMAP_MODE_CONTRAST_CURVE
+//            this[CaptureRequest.TONEMAP_CURVE] = toneMap
+//            this[CaptureRequest.CONTROL_AF_MODE] = autoAF
+//            this[CaptureRequest.LENS_FOCUS_DISTANCE] =
+//                focalRatio * characteristics[CameraCharacteristics.LENS_INFO_MINIMUM_FOCUS_DISTANCE]!!
             addTarget(binding.viewFinder.holder.surface)
             addTarget(recorderSurface)
             // Sets user requested FPS for all targets
@@ -353,6 +354,7 @@ class FarRedFragment: Fragment() {
 
         setCameraParameters()
         // Open the selected camera
+        cameraId = "0"
         camera = openCamera(cameraManager, cameraId, cameraHandler)
         Log.d("preview", "camera opened".plus(cameraId))
         // Creates list of Surfaces where the camera will output frames
@@ -370,27 +372,30 @@ class FarRedFragment: Fragment() {
 
         // Button press triggers PLR test
         binding.buttonTest.setOnClickListener {
+            Toast.makeText(requireContext(), binding.userIDNumber.text.toString(), Toast.LENGTH_SHORT )
             GlobalScope.launch(Dispatchers.IO) {
                 lifecycleScope.launch(){
                     binding.buttonTest.text="Testing"
                     binding.buttonTest.isEnabled=false
                     binding.buttonDigitspan.isEnabled=false
                     binding.buttonDigitspan.text="Testing"
+
                 }
                 testtype="plr"
                 userid = binding.userIDNumber.text.toString()
+                Log.d("userid_buttonclick", userid)
                 if (binding.trialNumber.text.toString() != ""){
-                    trialnum = binding.trialNumber.text.toString().toInt()
+                    trialnum = Integer.parseInt(binding.trialNumber.text.toString())
                 }
-
+                delay(500)
                 session.stopRepeating()
                 setupRecorder(recorderSurface,"PLR")
                 session.setRepeatingRequest(recordRequest, null, cameraHandler)
                 delay(1000) //time before light on
                 toggleTorch() //toggle flashlight on
-                delay(2000) //time with light on
+                delay(1000) //time with light on
                 toggleTorch() //toggle flashlight off
-                delay(2000) //time after light off
+                delay(3000) //time after light off
                 recorder?.stop()
                 lifecycleScope.launch(){
                     binding.buttonTest.text="PLR Test"
@@ -420,7 +425,7 @@ class FarRedFragment: Fragment() {
                 testtype="dig"
                 userid = binding.userIDNumber.text.toString()
                 if (binding.trialNumber.text.toString() != ""){
-                    trialnum = binding.trialNumber.text.toString().toInt()
+                    trialnum = 0
                 }
                 session.stopRepeating()
                 setupRecorder(recorderSurface,"SPAN")
@@ -483,24 +488,24 @@ class FarRedFragment: Fragment() {
                 session.setRepeatingRequest(session.device.createCaptureRequest(CameraDevice.TEMPLATE_RECORD).apply {
                     // Add the preview and recording surface target
                     this[CaptureRequest.FLASH_MODE] = flashMode
-                    this[CaptureRequest.LENS_OPTICAL_STABILIZATION_MODE] =
-                        CameraCharacteristics.LENS_OPTICAL_STABILIZATION_MODE_OFF
-                    this[CaptureRequest.CONTROL_AE_MODE] = autoAE
-                    this[CaptureRequest.CONTROL_AWB_MODE] = autoAWB
-                    this[CaptureRequest.CONTROL_AE_LOCK] = ae_lock
-                    this[CaptureRequest.CONTROL_AWB_LOCK] = awb_lock
-                    this[CaptureRequest.SENSOR_SENSITIVITY] = sensitivity
-                    this[CaptureRequest.CONTROL_POST_RAW_SENSITIVITY_BOOST] = boost
-                    this[CaptureRequest.SENSOR_FRAME_DURATION] = frameDuration
-                    this[CaptureRequest.SENSOR_EXPOSURE_TIME] = exposureTime
-                    this[CaptureRequest.COLOR_CORRECTION_GAINS] = colorCorrectinGain
-                    this[CaptureRequest.COLOR_CORRECTION_TRANSFORM] = ColorSpaceTransform(colorCorrectionTransform)
-                    this[CaptureRequest.COLOR_CORRECTION_MODE] = colorCorrectionMode
-                    this[CaptureRequest.TONEMAP_MODE] = CameraCharacteristics.TONEMAP_MODE_CONTRAST_CURVE
-                    this[CaptureRequest.TONEMAP_CURVE] = toneMap
-                    this[CaptureRequest.CONTROL_AF_MODE] = autoAF
-                    this[CaptureRequest.LENS_FOCUS_DISTANCE] =
-                        focalRatio * characteristics[CameraCharacteristics.LENS_INFO_MINIMUM_FOCUS_DISTANCE]!!
+//                    this[CaptureRequest.LENS_OPTICAL_STABILIZATION_MODE] =
+//                        CameraCharacteristics.LENS_OPTICAL_STABILIZATION_MODE_OFF
+//                    this[CaptureRequest.CONTROL_AE_MODE] = autoAE
+//                    this[CaptureRequest.CONTROL_AWB_MODE] = autoAWB
+//                    this[CaptureRequest.CONTROL_AE_LOCK] = ae_lock
+//                    this[CaptureRequest.CONTROL_AWB_LOCK] = awb_lock
+//                    this[CaptureRequest.SENSOR_SENSITIVITY] = sensitivity
+//                    this[CaptureRequest.CONTROL_POST_RAW_SENSITIVITY_BOOST] = boost
+//                    this[CaptureRequest.SENSOR_FRAME_DURATION] = frameDuration
+//                    this[CaptureRequest.SENSOR_EXPOSURE_TIME] = exposureTime
+//                    this[CaptureRequest.COLOR_CORRECTION_GAINS] = colorCorrectinGain
+//                    this[CaptureRequest.COLOR_CORRECTION_TRANSFORM] = ColorSpaceTransform(colorCorrectionTransform)
+//                    this[CaptureRequest.COLOR_CORRECTION_MODE] = colorCorrectionMode
+//                    this[CaptureRequest.TONEMAP_MODE] = CameraCharacteristics.TONEMAP_MODE_CONTRAST_CURVE
+//                    this[CaptureRequest.TONEMAP_CURVE] = toneMap
+//                    this[CaptureRequest.CONTROL_AF_MODE] = autoAF
+//                    this[CaptureRequest.LENS_FOCUS_DISTANCE] =
+//                        focalRatio * characteristics[CameraCharacteristics.LENS_INFO_MINIMUM_FOCUS_DISTANCE]!!
                     addTarget(binding.viewFinder.holder.surface)
                     addTarget(recorderSurface)
                     // Sets user requested FPS for all targets
@@ -587,6 +592,7 @@ class FarRedFragment: Fragment() {
         val mediaDir: String =
             "${Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM)}/Camera"
         val sdf = SimpleDateFormat("yyyy_MM_dd_HH_mm_ss_SSS", Locale.US)
+        Log.d("userid", userid)
         return File(mediaDir, "FarRed_"
             .plus(userid)
             .plus("_")
