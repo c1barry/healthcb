@@ -151,6 +151,7 @@ class FarRedFragment: Fragment() {
 
     private fun setupRecorder(surface: Surface, expName: String) {
         recorder?.release()
+        outputFile = createFile(requireContext(),"mp4")
 //        outputFile = createFile(requireContext(),"mp4")
         recorder = MediaRecorder().apply {
             setVideoSource(MediaRecorder.VideoSource.SURFACE)
@@ -207,7 +208,7 @@ class FarRedFragment: Fragment() {
     private var cameraId = "0"
     private var cameraWidth = 640
     private var cameraHeight = 480
-    private var cameraFps = 30
+    private var cameraFps = 60
     private val imageFormat = ImageFormat.YUV_420_888
 
     /** Requests used for preview only in the [CameraCaptureSession] */
@@ -372,7 +373,7 @@ class FarRedFragment: Fragment() {
 
         // Button press triggers PLR test
         binding.buttonTest.setOnClickListener {
-            Toast.makeText(requireContext(), binding.userIDNumber.text.toString(), Toast.LENGTH_SHORT )
+//            Toast.makeText(requireContext(), binding.userIDNumber.text.toString(), Toast.LENGTH_SHORT )
             GlobalScope.launch(Dispatchers.IO) {
                 lifecycleScope.launch(){
                     binding.buttonTest.text="Testing"
