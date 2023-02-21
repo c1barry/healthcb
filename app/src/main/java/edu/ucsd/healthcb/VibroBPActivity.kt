@@ -144,7 +144,7 @@ class VibroBPActivity : AppCompatActivity(), SensorEventListener {
     private var zgyroBufferQueue: Queue<Double> = LinkedList<Double>()
     private var pixel4freq = 423.0
     private var a53freq = 522.0
-    private var filterFreqMap = mapOf<String, Double>("Pixel 4" to pixel4freq, "SM-A536U1" to a53freq, "Pixel 7 Pro" to 500.0, "moto g pure" to 200.0)
+    private var filterFreqMap = mapOf<String, Double>("Pixel 4" to pixel4freq, "SM-A536U1" to a53freq, "Pixel 7 Pro" to 500.0, "moto g pure" to 200.0, "moto g power (2022)" to 200.0)
     private lateinit var accelflt: Butterworth
     private var fltfrq = 0.001
     private var accelfltfrq: Double = 200.0
@@ -445,12 +445,12 @@ class VibroBPActivity : AppCompatActivity(), SensorEventListener {
                 if (correctISO == true){
                     Log.d("sensitivity", "luma: ".plus(luma.toString()))
                     session.stopRepeating()
-                    val minthresh = 50
+                    val minthresh = 70
                     val maxthresh = 100
                     if (luma>maxthresh){
-                        sensitivity= abs(sensitivity-abs(luma-minthresh)).toInt()
+                        sensitivity= abs(sensitivity-0.2*abs(luma-minthresh)).toInt()
                     }else if (luma<minthresh){
-                        sensitivity= abs(sensitivity+abs(luma-maxthresh)).toInt()
+                        sensitivity= abs(sensitivity+0.2*abs(luma-maxthresh)).toInt()
                     }else{
                         ISOset=false
                         correctISO=false
@@ -1231,7 +1231,7 @@ class VibroBPActivity : AppCompatActivity(), SensorEventListener {
                 forceaccelSeries = accelModel(calibratedRange, calibratedRange)
 
                 accelplot.setDomainBoundaries(0, calibratedRange, BoundaryMode.FIXED)
-                accelplot.setRangeBoundaries(140,170,BoundaryMode.FIXED)
+                accelplot.setRangeBoundaries(3.5,5,BoundaryMode.AUTO)
 
                 Log.d(TAG, "ppgCounter = ".plus(ppgCounter))
                 Log.d(TAG, "accel Sample Rate = ".plus(accelCounter).plus("Hz"))
@@ -1257,9 +1257,9 @@ class VibroBPActivity : AppCompatActivity(), SensorEventListener {
                     if (i > accelCounter*30){
                         val thresh = 143.0+(accelCounter*30*32.0/calibratedRange)
                         val j = i-accelCounter*30
-                        forceGuideSeries.updateData(thresh+((j*1.5/(calibratedRange-(accelCounter*35)))))
+                        forceGuideSeries.updateData(((thresh+((j*1.5/(calibratedRange-(accelCounter*35)))))*5)/180)
                     }else{
-                        forceGuideSeries.updateData(143.0+(i*32.0/calibratedRange))
+                        forceGuideSeries.updateData(((143.0+(i*32.0/calibratedRange))*5)/180)
                     }
 
                 }

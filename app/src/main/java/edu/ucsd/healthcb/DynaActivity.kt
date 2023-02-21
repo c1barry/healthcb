@@ -57,6 +57,7 @@ import androidx.annotation.WorkerThread
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
+import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.androidplot.util.Redrawer
 import com.androidplot.xy.*
@@ -90,6 +91,10 @@ import kotlin.math.sqrt
 class DynaActivity : AppCompatActivity(), SensorEventListener {
 
     val fsr_testing=false //developer variable for switching to calibration testing with fsr
+
+    var max_grip=0.0
+    var avg_grip=0.0
+    var recorded_grip: MutableList<Double> = mutableListOf()
 
     /************************************Sensor and Plotting Related**********************************/
     private lateinit var sensorManager: SensorManager
@@ -141,9 +146,9 @@ class DynaActivity : AppCompatActivity(), SensorEventListener {
     private var accelMin = 0.0
     private var currentChannel = 0
 
-    private var bufferSize = 150
+    private var bufferSize = 15
     private var dataBufferQueue: Queue<Double> = LinkedList<Double>()
-    private var useFilter = false
+    private var useFilter = true
     private var useFilter2 = true
     private var flt: Butterworth = Butterworth(30.0)
 
@@ -395,11 +400,11 @@ class DynaActivity : AppCompatActivity(), SensorEventListener {
                 accelMax = -999.0
                 accelMin = 999.0
                 calibrationMode = true
-                delay(delayTime)
+                delay(1000)
                 calibrationMode = false
 
                 accelplot.removeSeries(accelChannels[currentChannel])
-                val plotSeconds = 15
+                val plotSeconds = recordSeconds.toInt()
                 var calibratedRange = accelCounter*plotSeconds
                 var calibratedGyroRange = gyroCounter*plotSeconds
                 xgyroSeries = accelModel(calibratedGyroRange, calibratedGyroRange)
@@ -410,15 +415,15 @@ class DynaActivity : AppCompatActivity(), SensorEventListener {
                 zaccelSeries = accelModel(calibratedRange, calibratedRange)
                 forceaccelSeries = accelModel(calibratedRange, calibratedRange)
                 accelChannels = listOf(forceaccelSeries, xgyroSeries, ygyroSeries, zgyroSeries, xaccelSeries, yaccelSeries, zaccelSeries)
-                accelplot.setDomainBoundaries(0, calibratedRange, BoundaryMode.FIXED)
+//                accelplot.setDomainBoundaries(0, calibratedRange, BoundaryMode.FIXED)
                 Log.d(TAG, "accel Sample Rate = ".plus(accelCounter).plus("Hz"))
                 Log.d(TAG, "gyro Sample Rate = ".plus(gyroCounter).plus("Hz"))
                 accelflt= Butterworth(accelCounter.toDouble())
-                accelfltfrq = accelCounter.toDouble()*0.05
+                accelfltfrq = accelCounter.toDouble()*0.02
                 accelBufferSize=(accelCounter/2).toInt()
-                accelplot.addSeries(accelChannels[currentChannel], xformatter)
+                accelplot.addSeries(forceaccelSeries, xformatter)
 
-                accelplot.rangeStepValue = 2.0
+//                accelplot.rangeStepValue = 2.0
                 accelplot.layoutManager.remove(accelplot.legend)
 
                 if (fsr_testing){
@@ -451,6 +456,11 @@ class DynaActivity : AppCompatActivity(), SensorEventListener {
 //                vibrateContinuous=!vibrateContinuous
                     delay(delayTime)
                 }
+                avg_grip = recorded_grip.average()
+                val gripResultText = "Max Grip: ${max_grip.toInt()} \n Avg Grip: ${avg_grip.toInt()}"
+                binding.gripResults.text = gripResultText
+                binding.gripResults.isVisible=true
+                max_grip=0.0
 
 //
 //                vibrateButton.performClick()
@@ -596,25 +606,10 @@ class DynaActivity : AppCompatActivity(), SensorEventListener {
             }
             if (calibrationMode) {
                 accelCounter += 1
-//                if (p0?.values?.get(currentChannel)!!.toDouble() > accelMax) {
-//                    accelMax = p0?.values?.get(currentChannel)!!.toDouble()
-//                }
-//                if (p0?.values?.get(currentChannel)!!.toDouble() < accelMin) {
-//                    accelMin = p0?.values?.get(currentChannel)!!.toDouble()
-//                }
             }
-//        xaccelSeries.updateData(p0?.values?.get(0)!!.toDouble())
-//        yaccelSeries.updateData(p0?.values?.get(1)!!.toDouble())
-//        zaccelSeries.updateData(p0?.values?.get(2)!!.toDouble())
-//            yaccelSeries.updateData(y)
             xaccelBufferQueue.add(x)
             yaccelBufferQueue.add(y)
             zaccelBufferQueue.add(z)
-//        if ((!useFilter) || (xaccelBufferQueue.size <accelBufferSize)){
-//            xaccelSeries.updateData(y)
-//            yaccelSeries.updateData(x)
-//            zaccelSeries.updateData(z)
-//        }
             if (!useFilter) {
                 xaccelSeries.updateData(x)
                 yaccelSeries.updateData(y)
@@ -624,16 +619,6 @@ class DynaActivity : AppCompatActivity(), SensorEventListener {
                 val ybufferArray = yaccelBufferQueue.toList().toDoubleArray()
                 val zbufferArray = zaccelBufferQueue.toList().toDoubleArray()
 
-//                val x_avg = xbufferArray.average()
-//                val y_avg = ybufferArray.average()
-//                val z_avg = zbufferArray.average()
-//                if (abs(x_avg)<1.5 && y_avg<11.2 && y_avg>8.8 && abs(z_avg)<1.5 && !orientationCorrect){
-//                    orientationCorrect=true
-//                    changeLineColor(orientationCorrect)
-//                }else if (orientationCorrect){
-//                    orientationCorrect=false
-//                    changeLineColor(orientationCorrect)
-//                }
                 val xreflect = UtilMethods.padSignal(xbufferArray, "reflect")
                 val yreflect = UtilMethods.padSignal(ybufferArray, "reflect")
                 val zreflect = UtilMethods.padSignal(zbufferArray, "reflect")
@@ -650,18 +635,6 @@ class DynaActivity : AppCompatActivity(), SensorEventListener {
                     UtilMethods.splitByIndex(yfilteredSignal, accelBufferSize, accelBufferSize * 2)
                 zfilteredSignal =
                     UtilMethods.splitByIndex(zfilteredSignal, accelBufferSize, accelBufferSize * 2)
-
-//            var xhilbertSignal = Hilbert(xbufferArray)
-//            var yhilbertSignal = Hilbert(ybufferArray)
-//            var zhilbertSignal = Hilbert(zbufferArray)
-//
-//            xhilbertSignal.transform(false)
-//            yhilbertSignal.transform(false)
-//            zhilbertSignal.transform(false)
-//
-//            var xfilteredSignal= xhilbertSignal.amplitudeEnvelope
-//            var yfilteredSignal= yhilbertSignal.amplitudeEnvelope
-//            var zfilteredSignal= zhilbertSignal.amplitudeEnvelope
 //
                 val lastValx = xfilteredSignal.last()
                 val lastValy = yfilteredSignal.last()
@@ -674,15 +647,28 @@ class DynaActivity : AppCompatActivity(), SensorEventListener {
                     val parameters = doubleArrayOf(470.51, -13.06011158,   -79.6883385,    -11.09071467,  7449.08359999,
                         -1903.76515038, -1640.82724184)
                     forceaccelval = parameters[0]+(lastValx*parameters[1])+(lastValy*parameters[2])+(lastValz*parameters[3])+(xgyro*parameters[4])+(ygyro*parameters[5])+(zgyro*parameters[6])
-                }else{
+                }else if(Build.MODEL == "Pixel 7 Pro"){
+//                    val parameters = doubleArrayOf(3.9, 14.5)
+//                    val parameters = doubleArrayOf(1.2, 30.5)
+                    val parameters = doubleArrayOf(14.04, 21.167)
+                    forceaccelval = parameters[0]+(lastValx*parameters[1])
+                }
+                else{
                     val parameters = doubleArrayOf(1200.6520, -93.14648391,  -206.7670984,    -98.77187847,  -245.77843109,
                         -1209.21048107,  1541.51684023)
                     forceaccelval = parameters[0]+(lastValx*parameters[1])+(lastValy*parameters[2])+(lastValz*parameters[3])+(xgyro*parameters[4])+(ygyro*parameters[5])+(zgyro*parameters[6])
                 }
 
-//            forceaccelSeries.updateData(forceaccelval)
-                if (dataBufferQueue.size >= bufferSize) {
+//                forceaccelSeries.updateData(forceaccelval)
+                if (isRecording) {
                     forceaccelSeries.updateData(forceaccelval)
+                    if (forceaccelval>max_grip){
+                        max_grip=forceaccelval
+                    }
+                    if (forceaccelSeries.size()>accelCounter*3){
+                        recorded_grip.add(forceaccelval)
+                    }
+
                 }
             }
             if (xaccelBufferQueue.size >= accelBufferSize) {
@@ -692,79 +678,79 @@ class DynaActivity : AppCompatActivity(), SensorEventListener {
             }
         }
         ///////////////////////////////////////////////////////GYROSCOPE//////////////////////////////////////////////////////////////////////////////////////
-        else if (p0!!.sensor.type == Sensor.TYPE_GYROSCOPE){
-            if (isRecording){
-                gyrowriter.appendLine(
-                    Calendar.getInstance().timeInMillis.toString().plus(", ").plus(
-                        p0?.values?.get(0).toString().plus(", ").plus(p0?.values?.get(1).toString())
-                            .plus(", ").plus(p0?.values?.get(2).toString())
-                    )
-                )
-            }
-            if (calibrationMode){
-                gyroCounter +=1
-            }
-
-            val x = p0?.values?.get(0)!!.toDouble()
-            val y = p0?.values?.get(1)!!.toDouble()
-            val z = p0?.values?.get(2)!!.toDouble()
-//            yaccelSeries.updateData(y)
-            xgyroBufferQueue.add(x)
-            ygyroBufferQueue.add(y)
-            zgyroBufferQueue.add(z)
-//        if ((!useFilter) || (xaccelBufferQueue.size <accelBufferSize)){
-//            xaccelSeries.updateData(y)
-//            yaccelSeries.updateData(x)
-//            zaccelSeries.updateData(z)
+//        else if (p0!!.sensor.type == Sensor.TYPE_GYROSCOPE){
+//            if (isRecording){
+//                gyrowriter.appendLine(
+//                    Calendar.getInstance().timeInMillis.toString().plus(", ").plus(
+//                        p0?.values?.get(0).toString().plus(", ").plus(p0?.values?.get(1).toString())
+//                            .plus(", ").plus(p0?.values?.get(2).toString())
+//                    )
+//                )
+//            }
+//            if (calibrationMode){
+//                gyroCounter +=1
+//            }
+//
+//            val x = p0?.values?.get(0)!!.toDouble()
+//            val y = p0?.values?.get(1)!!.toDouble()
+//            val z = p0?.values?.get(2)!!.toDouble()
+////            yaccelSeries.updateData(y)
+//            xgyroBufferQueue.add(x)
+//            ygyroBufferQueue.add(y)
+//            zgyroBufferQueue.add(z)
+////        if ((!useFilter) || (xaccelBufferQueue.size <accelBufferSize)){
+////            xaccelSeries.updateData(y)
+////            yaccelSeries.updateData(x)
+////            zaccelSeries.updateData(z)
+////        }
+//            if (!useFilter) {
+//                xgyroSeries.updateData(x)
+//                ygyroSeries.updateData(y)
+//                zgyroSeries.updateData(z)
+//            } else if (xgyroBufferQueue.size >= gyroBufferSize) {
+//                val xbufferArray = xgyroBufferQueue.toList().toDoubleArray()
+//                val ybufferArray = ygyroBufferQueue.toList().toDoubleArray()
+//                val zbufferArray = zgyroBufferQueue.toList().toDoubleArray()
+//
+//
+//                val xreflect = UtilMethods.padSignal(xbufferArray, "reflect")
+//                val yreflect = UtilMethods.padSignal(ybufferArray, "reflect")
+//                val zreflect = UtilMethods.padSignal(zbufferArray, "reflect")
+//                var xfilteredSignal: DoubleArray =
+//                    accelflt.lowPassFilter(absoluteValue(xreflect), 5, accelfltfrq)
+//                var yfilteredSignal: DoubleArray =
+//                    accelflt.lowPassFilter(absoluteValue(yreflect), 5, accelfltfrq)
+//                var zfilteredSignal: DoubleArray =
+//                    accelflt.lowPassFilter(absoluteValue(zreflect), 5, accelfltfrq)
+//
+//                xfilteredSignal =
+//                    UtilMethods.splitByIndex(xfilteredSignal, gyroBufferSize, gyroBufferSize * 2)
+//                yfilteredSignal =
+//                    UtilMethods.splitByIndex(yfilteredSignal, gyroBufferSize, gyroBufferSize * 2)
+//                zfilteredSignal =
+//                    UtilMethods.splitByIndex(zfilteredSignal, gyroBufferSize, gyroBufferSize * 2)
+//
+////            var xhilbertSignal = Hilbert(xbufferArray)
+////            var yhilbertSignal = Hilbert(ybufferArray)
+////            var zhilbertSignal = Hilbert(zbufferArray)
+////
+////            xhilbertSignal.transform(false)
+////            yhilbertSignal.transform(false)
+////            zhilbertSignal.transform(false)
+////
+////            var xfilteredSignal= xhilbertSignal.amplitudeEnvelope
+////            var yfilteredSignal= yhilbertSignal.amplitudeEnvelope
+////            var zfilteredSignal= zhilbertSignal.amplitudeEnvelope
+////
+//                xgyro = xfilteredSignal.last()
+//                ygyro = yfilteredSignal.last()
+//                zgyro = zfilteredSignal.last()
+//            }
+//
+//            xgyroSeries.updateData(p0?.values!!.get(0).toDouble())
+//            ygyroSeries.updateData(p0?.values!!.get(1).toDouble())
+//            zgyroSeries.updateData(p0?.values!!.get(2).toDouble())
 //        }
-            if (!useFilter) {
-                xgyroSeries.updateData(x)
-                ygyroSeries.updateData(y)
-                zgyroSeries.updateData(z)
-            } else if (xgyroBufferQueue.size >= gyroBufferSize) {
-                val xbufferArray = xgyroBufferQueue.toList().toDoubleArray()
-                val ybufferArray = ygyroBufferQueue.toList().toDoubleArray()
-                val zbufferArray = zgyroBufferQueue.toList().toDoubleArray()
-
-
-                val xreflect = UtilMethods.padSignal(xbufferArray, "reflect")
-                val yreflect = UtilMethods.padSignal(ybufferArray, "reflect")
-                val zreflect = UtilMethods.padSignal(zbufferArray, "reflect")
-                var xfilteredSignal: DoubleArray =
-                    accelflt.lowPassFilter(absoluteValue(xreflect), 5, accelfltfrq)
-                var yfilteredSignal: DoubleArray =
-                    accelflt.lowPassFilter(absoluteValue(yreflect), 5, accelfltfrq)
-                var zfilteredSignal: DoubleArray =
-                    accelflt.lowPassFilter(absoluteValue(zreflect), 5, accelfltfrq)
-
-                xfilteredSignal =
-                    UtilMethods.splitByIndex(xfilteredSignal, gyroBufferSize, gyroBufferSize * 2)
-                yfilteredSignal =
-                    UtilMethods.splitByIndex(yfilteredSignal, gyroBufferSize, gyroBufferSize * 2)
-                zfilteredSignal =
-                    UtilMethods.splitByIndex(zfilteredSignal, gyroBufferSize, gyroBufferSize * 2)
-
-//            var xhilbertSignal = Hilbert(xbufferArray)
-//            var yhilbertSignal = Hilbert(ybufferArray)
-//            var zhilbertSignal = Hilbert(zbufferArray)
-//
-//            xhilbertSignal.transform(false)
-//            yhilbertSignal.transform(false)
-//            zhilbertSignal.transform(false)
-//
-//            var xfilteredSignal= xhilbertSignal.amplitudeEnvelope
-//            var yfilteredSignal= yhilbertSignal.amplitudeEnvelope
-//            var zfilteredSignal= zhilbertSignal.amplitudeEnvelope
-//
-                xgyro = xfilteredSignal.last()
-                ygyro = yfilteredSignal.last()
-                zgyro = zfilteredSignal.last()
-            }
-
-            xgyroSeries.updateData(p0?.values!!.get(0).toDouble())
-            ygyroSeries.updateData(p0?.values!!.get(1).toDouble())
-            zgyroSeries.updateData(p0?.values!!.get(2).toDouble())
-        }
     }
 
     override fun onAccuracyChanged(p0: Sensor?, p1: Int) {

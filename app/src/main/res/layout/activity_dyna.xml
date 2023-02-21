@@ -32,7 +32,7 @@
         app:lineLabels="left|bottom"
         app:rangeTitle="range"
         app:title="Force (Accelerometer) Plot"
-        android:visibility="invisible"/>
+        android:visibility="visible"/>
 
     <com.androidplot.xy.XYPlot
         android:id="@+id/ppgplot"
@@ -103,7 +103,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Switch Channel"
-        android:visibility="invisible"
+        android:visibility="visible"
 
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/vibrateButton"
@@ -188,6 +188,17 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/trialNumber"
         app:layout_constraintTop_toBottomOf="@+id/Dyna" />
+
+    <TextView
+        android:id="@+id/gripResults"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Max Grip: \n Avg Grip: "
+        android:visibility="invisible"
+        android:layout_marginBottom="70dp"
+        android:layout_marginRight="15dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
